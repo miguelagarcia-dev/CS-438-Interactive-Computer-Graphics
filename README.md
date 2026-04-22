@@ -1,6 +1,8 @@
 # CS 438 — Interactive Computer Graphics @ NJIT
 
-WebGPU assignments from my Interactive Computer Graphics course at NJIT. Everything runs in the browser — no installs, no build step, just open an HTML file.
+An intro to core computer graphics concepts: GPU rendering pipeline · 2D/3D drawing · lighting & shading · rasterization · geometric transformations · curves & surfaces · subdivision · meshing · and more.
+
+WebGPU assignments from the course — everything runs in the browser, no installs, no build step, just open an HTML file.
 
 ---
 
