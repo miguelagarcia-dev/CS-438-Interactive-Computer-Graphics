@@ -1,0 +1,427 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title id="title">
+        A3 | Lastname, Firstname, Student Number
+    </title>
+    <link rel="stylesheet" type="text/css" href="./resources/style.css">
+    <script type="text/javascript" src="./resources/utils.js"></script>
+    <script type="text/javascript" src="./resources/color.js"></script>
+    <script type="text/javascript" src="./resources/perlin.js"></script>
+    <script type="text/javascript" src="./resources/obj-loader.js"></script>
+    <script type="text/javascript" src="./resources/data.js"></script>
+    <script type="text/javascript" src="./resources/math.js"></script>
+    <script type="text/javascript" src="./resources/geometry.js"></script>
+    <script type="text/javascript" src="task3.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-preview-common.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-task3.js"></script>
+    <script type="text/javascript">
+        function visibility(id) {
+            var x = document.getElementById(id);
+            if (x.style.display === "none") {
+                x.style.display = "grid";
+            } else {
+                x.style.display = "none";
+            }
+        }      
+    </script>
+</head>
+
+<body onload="main();">
+    <div class="content">
+        <div class="textdiv">
+            <h1>New Jersey Institute of Technology<br /> Interactive Computer Graphics CS 438 / CS 657</h1>
+        </div>
+        <div class="textdiv" style="display: initial;">
+            <h2>Assignment 3</h2>
+            <p id="author">
+                Author: Last Name, First Name, Student Number
+            </p>
+            <h3>Date: <b style="color:tomato;">Spring 2026</b></h3>
+            <h3>Due: <b style="color:tomato;">See CANVAS Schedule</b></h3>
+            <p>Go to: <a href="task3.html">Assignment Home</a> | <a href="task3.html">Tasks</a> </p>
+        </div>
+        <div class="textdiv" style="display: initial;">
+            <div class="taskdiv">
+                <h2>Tasks</h2>
+                <p> There are 4 Tasks. The HTML/JS file pair is named accordingly: (<code>task3.html</code>, <code>task3.js</code>). Additionally, there is a file containing the WebGPU shaders called <code>resources/webgpu-task3.wgsl</code>.
+                </p>
+                <p>
+                    <b>Search for TODO_A3 in task3.js, resources/geometry.js, and resources/webgpu-task3.wgsl</b> to find the location where to implement the tasks. You will also find the instructions for each task as
+                    comments in the code. </p>
+                <h3>Notes:</h3>
+                <ul>
+                    <li>The documentation (below the WebGPU canvas) of your solution also contributes to grading.</li>
+                    <li>If you have questions regarding the assignment, post them on the <a
+                            href="https://njit.instructure.com/courses/10170/discussion_topics">CANVAS forum</a> where they will be answered.</li>
+                    <li><b>Do not</b> write individual emails with assignment questions.</li>
+                </ul>
+                <h3>Hints:</h3>
+                <ul>
+                    <li>You can use the mouse to control the camera now. Left button orbits the camera around the origin, right button is used for the distance. </li>
+                    <li>If you click on the "Toggle GUI" button, you can hide (and show) the GUI elements. </li>
+                </ul>
+            </div>
+            <div class="taskdiv">
+                <h2>1. Texture Mapping (5 points)</h2>
+                <h3>Task 1a: Sampling from a Diffuse Texture (3 points)</h3>
+                <p>Hint: Task 1a is implemented in the file <code>resources/webgpu-task3.wgsl</code> using WGSL.</p>
+                <p>Implement sampling from the diffuse texture sampler. Use the <code>u_hasSampler[0]</code> value to decide if the kd-value should be taken from the sampler or
+                    not. If <code>u_hasSampler[0]==1.0</code>, use the value from the texture as kd-coefficient. If <code>u_hasSampler[0]==0.0</code>, use the standard material
+                    diffuse coefficient rgb-values. You can also blend between them.</p>
+                <p>Note: to get full points, avoid using an if-switch.</p>
+                <p>Hint: to sample from a texture in WGSL, use <code>textureSample(...)</code>.</p>
+                <h3>Task 1b: Experimenting with Texture Filtering (1 points)</h3>
+                <p>In this task, use the provided texture filter method for minification and magnification to create two different texture filtering setups. You are free to choose
+                    any setup you like, however, the difference needs to be visible and well explained. 
+                    Create 2 screenshots of your setups (see below), and discuss the difference between your both setups and name their pros and cons. </p>
+                <div style="display: grid; grid-template-columns: 50% 50%;">
+                    <img src="./img/filter1.jpg" style="width: 380px;" />
+                    <img src="./img/filter2.jpg" style="width: 380px;" />
+                </div>
+                <h3>Task 1c: Document Your Work (1 points).</h3>
+                <p> Document your work below the canvas. </p>
+            </div>
+            <div class="taskdiv">
+                <h2>2. Tangent Space Generation (10 points)</h2>
+                <h3>Task 2a: Per-Triangle Tangent Solve (8 points)</h3>
+                <p>
+                    In this task you will implement the core tangent-space generation step in
+                    <code>resources/geometry.js</code>. Search for <code>TODO_A3</code> inside the
+                    <code>computeTS(i0, i1, i2)</code> function.
+                </p>
+                <p>
+                    For one triangle, compute the tangent-space directions from the vertex positions and texture
+                    coordinates. In particular, implement:
+                </p>
+                <ul>
+                    <li>the UV deltas,</li>
+                    <li>the position deltas,</li>
+                    <li>the determinant of the 2x2 UV system,</li>
+                    <li>the tangent vector <code>T</code>,</li>
+                    <li>the bitangent vector <code>B</code>,</li>
+                    <li>and the returned tangent-space matrix payload.</li>
+                </ul>
+                <p>
+                    This task is the geometric foundation for normal mapping. Once this is implemented correctly,
+                    tangent-space shading can work on meshes whose tangents are computed at runtime, such as the sphere,
+                    teapot, head, and bunny.
+                </p>
+                <h3>Task 2b: Documentation and Fallback Explanation (2 points)</h3>
+                <p>
+                    Document your implementation below. Briefly explain how the tangent and bitangent are computed, and
+                    state clearly how you used the cube as a fallback in case your tangent generation for the other
+                    meshes was still incomplete.
+                </p>
+            </div>
+            <div class="taskdiv">
+                <h2>3. Normal Mapping (12 points)</h2>
+                <h4 style="color:tomato;">Note: To see the effects of normal mapping you need to switch the shading to "Phong (Tangent Space)" in the GUI!</h4>
+                <h3>Task 3a: Transform to Tangent Space in VS (8 points)</h3>
+                <p>Implement a transformation to tangent-space for normal mapping. </p>
+                <p> Using the supplied tangent attribute <code>a_tangent</code>, construct the TBN matrix. Hint: you need to compute the bitangent. Also be careful, since the
+                    order/direction matters! Next, transform the light vector and the view vector from view-space into tangent-space in order to compute lighting in the
+                    tangent-space. Hint: use the varyings <code>v_lightTS</code> and <code>v_eyeTS</code> to pass the values to the fragment shader. </p>
+                <p>For further reading use the resources provided in the slides. </p>
+                <h3>Task 3b: Normal Sampling in FS (3 points)</h3>
+                <p> Implement normal-mapping in tangent-space by appropriately sampling the value of the normal vector (<code>vec3 N</code>) from the normal-map texture
+                    (<code>u_nmSampler</code>). Also, set the value of light-direction <code>vec3 L</code> and eye-direction <code>vec3 V</code> appropriately. These values are
+                    further passed to the Phong function -- this function does not need to be altered since it works in either space as long as proper vectors are provided. </p>
+                <p> Account for a case, where no normal map is provided. Your program should still run smoothly. In this case the value of <code>u_hasSampler[2]</code> is equal to
+                    zero. Similarly to Task 1, try to find a solution avoiding using a conditional statement (IF-switch). </p>
+                <p>
+                    If your Task 2 tangent generation is still incomplete, use the cube mesh as fallback for Task 3 testing.
+                    The cube already provides hardcoded tangent data, so you can still complete and validate the normal-mapping task there.
+                </p>
+                <p>Your result should look like to the one below:</p>
+                <div style="display: grid; grid-template-columns: 100%;">
+                    <img src="./img/normalmap1.jpg" style="width: 760px;" />
+                </div>
+                <h3>Task 3c: Document Your Work (1 points).</h3>
+                <p> Document your work below the canvas, depending how detailed it is, you gain up to 2 points. </p>
+            </div>
+            <div class="taskdiv">
+                <h2>4. Create an Own Material (5 points)</h2>
+                <h3>Task 4a: Diffuse Texture (2 points)</h3>
+                <p>Create or find your own diffuse texture for your material. Copy this texture to the ./textures/ folder. Further, add your texture to the Custom Material (you can
+                    rename it) in the material manager (search for TODO_A3 Task 4) in the 'task3.js' file.</p>
+                <h3>Task 4b: Normal Map (2 points)</h3>
+                <p>Create or find a corresponding normal map. You can use tools like <a href="https://cpetry.github.io/NormalMap-Online/">Normal Map Online</a>. Add this map to your material. </p>
+                <p>Note, that using <a href="https://cpetry.github.io/NormalMap-Online/">Normal Map Online</a>, you can create (almost) correct height maps from 4 photos with different light positions. This technique is a Computer Vision technique called <a href="https://en.wikipedia.org/wiki/Photometric_stereo">Photometric Stereo or Shape form Shading</a>.</p>
+                <h3>Task 4c: Documentation (1 point)</h3>
+                <p>Document your work and be creative! Include at least one representative screenshot of your own material and briefly explain the visual choices you made.</p>
+                <p></p>
+            </div>
+        </div>
+        <div class="textdiv">
+            <h2>Your WebGPU Canvas</h2>
+            <p id="webgpuStatus" style="display:none;">WebGPU preview not initialized yet.</p>
+            <button onclick="visibility('uiwrapper');" style="font-weight: bold; background-color:transparent;">
+                <h3>Toggle GUI</h3>
+            </button>
+            <div class="container">
+                <canvas id="canvas" width="800" height="600" oncontextmenu="return false;"> Your browser does not support HTML5. </canvas>
+                <div class=uiwrapper id="uiwrapper">
+                    <div class="uiflex" id="flexleft">
+                        <div class="uiblock">
+                            <button onclick="visibility('uicamera');" class="uibox" style="font-weight: bold; background-color:transparent;"> Camera Properties</button>
+                            <div class="uisection" id="uicamera"  style="display: none;">
+                                <div class="uibox">Projection: </div>
+                                <div>
+                                    <select class="uibox" id="projectionSelect">
+                                        <option class="uibox" value="persp">Perspective</option>
+                                        <option class="uibox" value="ortho">Orthographic</option>
+                                    </select>
+                                </div>
+                                <div class="uibox">Up: </div>
+                                <div class="uibox"> -90 <input id="rotZSlider" type="range" min="-90" max="90" step="1" value="0" /> +90</div>
+                                <div class="uibox">FovY: </div>
+                                <div class="uibox"> 1 <input id="fovySlider" type="range" min="1" max="120" step="1" value="90" />120</div>
+                                <div class="uibox">Near: </div>
+                                <div class="uibox"> 0.01 <input id="nearSlider" type="range" min="0.01" max="4.99" step="0.01" value="0.1" />&nbsp;5</div>
+                                <div class="uibox">Far: </div>
+                                <div class="uibox">&nbsp;&nbsp; 5<input id="farSlider" type="range" min="5" max="25" step="1" value="10" />25</div>
+                            </div>
+                        </div>
+                        <div class="uiblock">
+                            <button onclick="visibility('uiscene');" class="uibox" style="  font-weight: bold; background-color:transparent;"> Scene and Drawing Properties</button>
+                            <div class="uisection" id="uiscene">
+                                <div class="uibox">Shading: </div>
+                                <select class="uibox" id="shadingSelect">
+                                    <option class="uibox" value="1">Phong (View Space)</option>
+                                    <option class="uibox" value="2">Phong (Tangent Space)</option>
+                                    <option class="uibox" value="3">Flat</option>
+                                    <option class="uibox" value="-2">Colors</option>
+                                    <option class="uibox" value="-3">UVs</option>
+                                    <option class="uibox" value="-4">Normals</option>
+                                    <option class="uibox" value="-5">Tangents</option>
+                                    <option class="uibox" value="-6">Positions</option>
+                                </select>
+                                <div class="uibox">Face Culling: </div>
+                                <div class="uibox">
+                                    <select class="uibox" id="cullface">
+                                        <option class="uibox" value="none">None</option>    
+                                        <option class="uibox" value="front">Front</option>
+                                        <option class="uibox" value="back">Back</option>                                                                    
+                                        <option class="uibox" value="both">Front and Back</option>                                                                    
+                                    </select>
+                                </div>
+                                <div class="uibox">Face Winding: </div>
+                                <div class="uibox">
+                                    <select class="uibox" id="frontface">                                          
+                                        <option class="uibox" value="ccw">CCW</option>
+                                        <option class="uibox" value="cw">CW</option>                                                                    
+                                    </select>
+                                </div>
+                                <div class="uibox">Tangents: </div>
+                                <div class="uibox">
+                                    <input type="checkbox" id="drawFrame" \>
+                                </div>
+                                <div class="uibox">Wireframe: </div>
+                                <div class="uibox">
+                                    <input type="checkbox" id="drawWire" \>
+                                </div>
+                                <div class="uibox">Background: </div>
+                                <div class="uibox">
+                                    <input class="uibox" type="color" id="bgdColor" value="#EEEEEE" style="width: 35px;" />
+                                </div>
+                                <div class="uibox">Depth Test: </div>
+                                <div class="uibox"><input id="depthCheck" type="checkbox" checked/> </div>  
+                                <div class="uibox">Anim. Speed: </div>
+                                <div class="uibox"> 0 <input id="speedSlider" type="range" min="0" max="100" step="1" value="10" /> 100</div>
+                                <div class="uibox">Mesh Resolut.: </div>
+                                <div class="uibox"> 1 <input id="resSlider" type="range" min="1" max="10" step="1" value="2" /> 10</div>
+                                <div class="uibox">Object 1</div>
+                                <div class="uibox">
+                                    <input type="checkbox" id="drawObj1" checked \>
+                                    <select class="uibox" id="obj1MeshSelect">
+                                        <option class="uibox" value="cube">Cube</option>
+                                        <option class="uibox" value="sphere">Sphere</option>
+                                        <option class="uibox" value="quad">Quad</option>
+                                        <option class="uibox" value="teapot">Utah Teapot</option>
+                                        <option class="uibox" value="head">Head</option>
+                                    </select>
+                                    <select class="uibox" id="obj1MatSelect"></select>
+                                </div>
+                                <div class="uibox">Object 2</div>
+                                <div class="uibox">
+                                    <input type="checkbox" id="drawObj2" checked \>
+                                    <select class="uibox" id="obj2MeshSelect">
+                                        <option class="uibox" value="cube">Cube</option>
+                                        <option class="uibox" value="sphere">Sphere</option>
+                                        <option class="uibox" value="quad">Quad</option>
+                                        <option class="uibox" value="teapot">Utah Teapot</option>
+                                    </select>
+                                    <select class="uibox" id="obj2MatSelect"></select>
+                                </div>
+                                <div class="uibox">Object 3</div>
+                                <div class="uibox">
+                                    <input type="checkbox" id="drawObj3" checked \>
+                                    <select class="uibox" id="obj3MeshSelect">
+                                        <option class="uibox" value="cube">Cube</option>
+                                        <option class="uibox" value="sphere">Sphere</option>
+                                        <option class="uibox" value="quad">Quad</option>
+                                        <option class="uibox" value="teapot">Utah Teapot</option>
+                                    </select>
+                                    <select class="uibox" id="obj3MatSelect"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="uiflex" id="flexright">
+                        <div class="uiblock">
+                            <button onclick="visibility('uilight');" class="uibox" style="  font-weight: bold; background-color:transparent;"> Light Properties</button>
+                            <div class="uisection" id="uilight" style="display: none;">
+                                <div class="uibox">Draw Bulb:</div>
+                                <div class="uibox"><input type="checkbox" checked id="drawBulb" \>
+                                </div>
+                                <div class="uibox">Light Color:</div>
+                                <div class="uibox">
+                                    <input type="range" id="lightSlider" class="uibox" min="0" max="1" step="0.01" value="1" style="width: 80%" />
+                                    <input type="color" id="lightColor" class="uibox" value="#ffffff" style="width: 35px" /></div>
+                                <div class="uibox">Light Rot X: </div>
+                                <div class="uibox"> -180 <input id="lightRotXSlider" type="range" min="-180" max="180" step="1" value="66" /> +180</div>
+                                <div class="uibox">Light Rot Z: </div>
+                                <div class="uibox"> -180 <input id="lightRotZSlider" type="range" min="-180" max="180" step="1" value="-16" /> +180</div>
+                                <div class="uibox">Light Dist: </div>
+                                <div class="uibox"> 0 <input id="lightDistSlider" type="range" min="0" max="10" step="0.1" value="3.5" /> +10</div>
+                            </div>
+                        </div>
+                        <div class="uiblock">
+                            <button onclick="visibility('uimaterial');" class="uibox" style="font-weight: bold; background-color:transparent;"> Material Properties</button>
+                            <div class="uisection" id="uimaterial" style="display: none;">
+                                <div class="uibox">Material: </div>
+                                <div>
+                                    <select class="uibox" id="materialSelect"></select>
+                                </div>
+                                <div class="uibox">Ambient (ka):</div>
+                                <div class="uibox">
+                                    <div class="uibox" style="width: max-content;"> rgb: [&nbsp; <div class="uibox" id="kaR" style="width: 25px;">0.10</div>,&nbsp; <div
+                                            class="uibox" id="kaG" style="width: 25px;">0.10</div>,&nbsp; <div class="uibox" id="kaB" style="width: 25px;">0.10</div> &nbsp;] </div>
+                                    <input class="uibox" type="color" id="kaColor" value="#F6B73C" style="width: 35px;" />
+                                </div>
+                                <div class="uibox">Diffuse (kd):</div>
+                                <div class="uibox">
+                                    <div class="uibox" style="width: max-content;"> rgb: [&nbsp; <div class="uibox" id="kdR" style="width: 25px;">0.10</div>,&nbsp; <div
+                                            class="uibox" id="kdG" style="width: 25px;">0.10</div>,&nbsp; <div class="uibox" id="kdB" style="width: 25px;">0.10</div> &nbsp;] </div>
+                                    <input class="uibox" type="color" id="kdColor" value="#F6B73C" style="width: 35px;" />
+                                </div>
+                                <div class="uibox">Specular (ks):</div>
+                                <div class="uibox">
+                                    <div class="uibox" style="width: max-content;"> rgb: [&nbsp; <div class="uibox" id="ksR" style="width: 25px;">0.10</div>,&nbsp; <div
+                                            class="uibox" id="ksG" style="width: 25px;">0.10</div>,&nbsp; <div class="uibox" id="ksB" style="width: 25px;">0.10</div> &nbsp;] </div>
+                                    <input class="uibox" type="color" id="ksColor" value="#F6B73C" style="width: 35px;" />
+                                </div>
+                                <div class="uibox">Power (q):</div>
+                                <div class="uibox">
+                                    <div class="uibox" id="qsValue" style="width: 25px;">0.1</div>
+                                    <input id="qsSlider" type="range" min="1" max="200" step="0.1" value="10" style="width: 155px;" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="uiblock">
+                            <button onclick="visibility('uitexture');" class="uibox" style="  font-weight: bold; background-color:transparent;">Texture Props</button>
+                            <div class="uisection" id="uitexture">
+                                <div class="uibox">Diffuse Map: </div>
+                                <div class="uibox">
+                                    <input type="checkbox" checked id="diffuseMap" \> &nbsp;Min: <select class="uibox" id="diffMinFilter"></select> &nbsp;Mag: <select class="uibox"
+                                        id="diffMagFilter"></select>
+                                </div>
+                                <div class="uibox">Normal Map: </div>
+                                <div class="uibox">
+                                    <input type="checkbox" id="normalMap" \> &nbsp;Min: <select class="uibox" id="normMinFilter"></select> &nbsp;Mag: <select class="uibox"
+                                        id="normMagFilter"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p></p>
+        </div>
+        <div class="textdiv">
+            <h2>Documentation</h2>
+            <p>
+                <!-- *** TODO_A3: Write a brief report here! *** -->
+                <!-- *** Replace the the text below! *** --> TODO_A3: write a short report here. </p>
+            <p> It should list what you have implemented, as well as a brief discussion and your conclusions. <br> Also add as many comments in your code as possible---it will help
+                us in judging your work. </p>
+            <h4>Task 1 documentation: Texture Mapping</h4>
+            <p>
+                For task 1a I used textureSample to sample the diffuse texture at the fragment's uv coordinate and then used mix() to blend between that sampled value and the material's kd color based on u_mode.z. When u_mode.z is 1 the texture is used, when it's 0 it falls back to the kd color, so no if statement needed.
+            </p>
+            <p>
+                For task 1b I set up two different filtering configurations to see the difference. The first one uses Nearest for both min and mag, which gives a pixelated look up close and obvious aliasing at a distance. The second uses Trilinear for min and Linear for mag, which blends the texture much more smoothly especially when the object is far away. The tradeoff is that trilinear uses mipmaps so it costs a bit more memory, but it looks a lot better in practice.
+            </p>
+            <h4>Task 2 documentation: Tangent Space Generation</h4>
+            <p>
+                For task 2a I implemented the tangent solve inside computeTS. The idea is that given the uv coordinates and positions of a triangle's three vertices, you can figure out which direction in model space corresponds to moving along U or V in texture space. I computed the uv deltas (duv1, duv2) and position edge vectors (dx1, dx2), then solved the 2x2 system by computing the determinant and applying Cramer's rule to get T and B. I also added a small guard for when the determinant is near zero so it doesn't blow up on degenerate triangles.
+            </p>
+            <p>
+                While working on task 3 I used the cube as a fallback since it has hardcoded tangents and skips computeTS entirely. Once the tangent solve was working I switched to the sphere and teapot and the normal mapping transferred over correctly.
+            </p>
+            <h4>Task 3 documentation</h4>
+            <p>
+                For task 3a in the vertex shader I transform the tangent attribute to view space using the normal matrix (same way as normals, w=0 since it's a direction). Then I compute the bitangent as cross(normalVS, tangentVS) to complete the TBN frame. To get the light and eye vectors into tangent space I used the fact that TBN is orthonormal so its inverse is just its transpose, meaning I can project each vector with three dot products instead of doing a matrix inverse. Those results go into lightTS and eyeTS varyings.
+            </p>
+            <p>
+                For task 3b in the fragment shader I sample the normal map, remap it from [0,1] to [-1,1], and use mix() to blend toward (0,0,1) when no normal map is bound (u_mode.w == 0). That fallback works correctly because (0,0,1) in tangent space is just the interpolated surface normal, so it gives the same result as regular view-space Phong. L and V come straight from the lightTS and eyeTS varyings passed from the vertex shader.
+            </p>
+            <h4>Task 4 documentation</h4>
+            <p>
+                For the custom material I was scrolling through Poly Haven and came across this metal plate texture. It's the kind of surface you see constantly in realistic FPS games like COD, on floors, walls, bunkers, all that kind of environment. I was curious how well the normal map would hold up here since the plate has these clean raised notches and panel seams, and I wanted to see if those details would still read as three dimensional under the tangent space lighting or if they'd flatten out. With the normal map enabled in Phong tangent space mode the notch detail does come through and you can see the light catching the edges of each panel as you move the light around.
+            </p>
+            <p>
+                <img src="./img/Task4SUpportDoc.png" style="width: 760px;" />
+            </p>
+        </div>
+        <div class="textdiv" style="background-color:#fff4d6;">
+            <h3>Assignment Validation &amp; Authorship</h3>
+            <p>
+                To ensure academic integrity and verify original authorship and mastery of the material, exams will include specific Validation Question.
+                Programming assignments are assessed on both code functionality and your understanding of the implementation. To verify authorship, exams
+                will include specific "Validation Questions" related to the logic and structure of your submitted assignments.
+            </p>
+            <p>
+                <b>Penalty Policy:</b> An incorrect answer to a validation question demonstrates a gap in understanding the submitted work. For each
+                validation question answered incorrectly, 10% of the total points for the corresponding assignment will be retroactively deducted from
+                that assignment's grade.
+            </p>
+            <p>
+                This deduction applies regardless of the original score received on the assignment. It is your responsibility to ensure you can explain
+                and reproduce the logic of any code you submit.
+            </p>
+        </div>
+
+        <div class="textdiv" style="background-color:lightpink;">
+            <h3>Honor Code</h3>
+            <p>A set of ethical principles governing this course: </p>
+            <ul style="padding-left: 20px; margin: 0 0 8px 0;">
+                <li>It is <b>okay</b> to share information and knowledge with your colleagues, but</li>
+                <li>It is <b>not okay</b> to share the code,</li>
+                <li>It is <b>not okay</b> to post or give out your code to others (also in the future!),</li>
+                <li>It is <b>not okay</b> to use code from others (also from the past) for this assignment!</li>
+            </ul>
+            <p>Any noticed disregard of these principles will be sanctioned as per the Academic Integrity Policy of NJIT (see below).</p>
+            <h3>Academic Integrity / Institutional Policies</h3>
+            <p>Academic Integrity is the cornerstone of higher education and is central to the ideals of this course and the university. Cheating is strictly prohibited and
+                devalues the degree that you are working on. As a member of the NJIT community, it is your responsibility to protect your educational investment by knowing and
+                following the academic code of integrity policy that is found at: <a
+                    href="http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf">http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf</a>.
+            </p>
+            <p>Please note that it is the professional obligation and responsibility of the instructor to report any academic misconduct to the Dean of Students Office. Any student
+                found in violation of the code by cheating, plagiarizing or using any online software inappropriately will result in disciplinary action. This may include a failing
+                grade of F, and/or suspension or dismissal from the university. If you have any questions about the code of Academic Integrity, please contact the Dean of Students
+                Office at dos@njit.edu.</p>
+        </div>
+
+        <div class="textdiv">
+            <h3>Good Luck!</h3>
+            <p> Instructor: Dr. Przemyslaw Musialski, Associate Professor<br /> Email: przemyslaw.musialski@njit.edu<br /> Copyright (c) 2019-2026 Przemyslaw Musialski </p>
+        </div>
+    </div>
+</body>
+
+</html>

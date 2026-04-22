@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="./resources/style.css">
+    <title>
+        A1 | Garcia, Miguel
+    </title>
+
+    <script type="text/javascript" src="./resources/math.js"></script>
+    <script type="text/javascript" src="./resources/color.js"></script>
+    <script type="text/javascript" src="task12.js"></script>
+</head>
+
+<body onload="main();">
+    <div class="content">
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h1>New Jersey Institute of Technology<br /> Interactive Computer Graphics CS 438 / CS 657</h1>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="display: initial;">
+            <h2>Assignment 1</h2>
+            <p>
+                Author: Garcia, Miguel
+            </p>
+            <h3>Date: <b style="color:tomato;">2/11/2026</b></h3>
+                <h3>Due: <b style="color:tomato;">2/25/2026</b></h3>
+            <p>Go to <a href="index.html">Assignment Home</a> | <a href="task11.html">Task 1</a> | <a href="task12.html">Task 2</a> | <a href="task13.html">Task 3</a> | <a href="task14.html">Task 4</a></p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="display: initial;">
+            <div class="taskdiv">
+                <h2>Task 2 (8 points)</h2>
+                <p>
+                    <b>Search for TODO_A1 in the JS file to find all tasks in the code!</b>
+                </p>
+                <p>Circle drawing and color interpolation:</p>
+                <p>
+                    2a: Create a circle geometry which can be rendered using triangle-fan topology. Use the arguments of the function to specify the radius of the circle and the number of linear segments to approximate it (3 points).
+                    Interpolate the color values on the circle linearly using the HUE of the <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSV color-space</a> (use function hsvToRgb(.,.,.)) (2 points).
+                </p>
+                <p>
+                    2b: Adapt the rendering function to render the circle geometry as a triangle fan. Use the same geometry to render a black outline of the circle as a line strip.
+                    Take care of proper management of the position/color input layout for both passes (2 points).
+                    Your result should look like on the image below.
+                </p>
+                <p>
+                    2c: Why is the displayed circle not round? Explain in the documentation below (1 point).
+                </p>
+                <img style="text-align:center" src="./img/task12.jpg" />
+            </div>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h2>Your WebGPU Canvas</h2>
+            <p id="webgpuStatus" class="statusline">WebGPU: initializing Task 2 preview...</p>
+            <div class="container">
+                <canvas id="webgpuCanvas" class="previewcanvas" width="800" height="600">
+                    Your browser does not support html5.
+                </canvas>
+                <div class="uiwrapper">
+                    <div class="uibox">Fill Triangles: </div>
+                    <div class="uibox"><input id="drawCheck" type="checkbox" checked/> </div>
+                    <div class="uibox">Segments: </div>
+                    <div class="uibox"> 0 <input id="rangeSlider" type="range" min="3" max="100" step="1" value="3" /> 100</div>
+                    <div class="uibox">Alpha: </div>
+                    <div class="uibox"> 0 <input id="alphaSlider" type="range" min="0" max="1" step="0.1" value="1" /> 1</div>
+                </div>
+            </div>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h2>Documentation</h2>
+            <p>
+                Please write a short report here.
+                It should list what you have implemented, as well as a brief discussion and your conclusions.
+                Also add as many comments in your code as possible---it will help us in judging your work.
+            </p>
+
+            <h3>From my understanding</h3>
+
+            <ul>
+                <li>
+                    vec2(x, y) — In this case this 2d vector is used to represent each vertex position on the canvas. 
+                    The center of the circle is a vec2(0, 0), and every
+                    rim point is also a vec2 computed from cos and sin.
+                </li>
+                <li>
+                    vec3(r, g, b) — The center gets white vec3(1,1,1) and each rim vertex gets a different hue-derived color.
+                </li>
+                <li>
+                    hsvToRgb(h, s, v) — Converts a color from Hue, Saturation, Value space to RGB.
+                    So we give it a value hue in [0, 1] range to returns an array (r, g, b).
+                    We can use it to go through a full rainbow .
+                </li>
+                <li>
+                    flattenArrays(points, colors) — Interleaves the two arrays into one flat buffer per vertex:
+                    [x, y, r, g, b, x, y, r, g, b, etc]. Both arrays must be the same length, which is why
+                    every points.push() is paired with a colors.push().
+                </li>
+            </ul>
+
+            <h3>2a — Circle geometry and color interpolation</h3>
+            <p>
+                To build the circle I first push a center vertex at (0, 0) with white color, which acts as
+                the anchor for all the triangle slices. Then I loop segments until it closes the circle 
+                so the outline connects back to the start seamlessly.
+            </p>
+            <p>
+                For the colors, I use the hue value to get a different color for each rim vertex, creating a rainbow effect.
+                The hue is computed as i / segments so it goes from 0 to 1 as we go around the circle.
+            </p>
+
+            <h3>2b — Triangle fan fill and line-strip outline</h3>
+            <p>
+                Using an index buffer with the pattern [0,1,2], [0,2,3], [0,3,4] where vertex 0 is always the
+                center of our circle to share between all slices and i, i+1 are two consecutive rim points. 
+                The fill pipeline uses triangle-list topology and drawIndexed so the GPU looks up which vertices 
+                to use for each slice, letting vertex 0 be reused every time without duplicating it in the buffer.
+            </p>
+            <p>
+                For the black outline using a separate vertex buffer  that contains only
+                the rim vertices to set them black [0,0,0].
+                The outline pipeline uses line-strip topology, which connects each consecutive vertex to the
+                next, tracing the edge of the circle. Drawing it after the fill means it always appears on top.
+            </p>
+
+            <h3>2c — Why does the circle appear non-round?</h3>
+            <p>
+                From what I understand, the vertex coordinates are in Normalized Device Coordinates (NDC),
+                where x and y both range from -1 to +1 regardless of the actual canvas size. 
+                The GPU then maps x across the full canvas width and y across the full height. 
+                Since our canvas is 800 × 600 and not square, the scaling isn’t equal, so a circle in
+                 NDC gets stretched wider than it is tall, making it look like a horizontal ellipse. 
+                 To fix this, we apply an aspect ratio correction in the vertex shader, 
+                 usually by dividing the x coordinate by (width / height) so both axes scale evenly.
+
+                 
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:#fff4d6;">
+            <h3>Assignment Validation &amp; Authorship</h3>
+            <p>
+                To ensure academic integrity and verify original authorship and mastery of the material, exams will include specific Validation Question.
+                Programming assignments are assessed on both code functionality and your understanding of the implementation. To verify authorship, exams
+                will include specific "Validation Questions" related to the logic and structure of your submitted assignments.
+            </p>
+            <p>
+                <b>Penalty Policy:</b> An incorrect answer to a validation question demonstrates a gap in understanding the submitted work. For each
+                validation question answered incorrectly, 10% of the total points for the corresponding assignment will be retroactively deducted from
+                that assignment's grade.
+            </p>
+            <p>
+                This deduction applies regardless of the original score received on the assignment. It is your responsibility to ensure you can explain
+                and reproduce the logic of any code you submit.
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:lightpink;">
+            <h3>Honor Code</h3>
+            <p>A set of ethical principles governing this course: </p>
+            <ul style="padding-left: 20px; margin: 0 0 8px 0;">
+                <li>It is <b>okay</b> to share information and knowledge with your colleagues, but</li>
+                <li>It is <b>not okay</b> to share the code,</li>
+                <li>It is <b>not okay</b> to post or give out your code to others (also in the future!),</li>
+                <li>It is <b>not okay</b> to use code from others (also from the past) for this assignment!</li>
+            </ul>
+            <p>Any noticed disregard of these principles will be sanctioned as per the Academic Integrity Policy of NJIT (see below).</p>
+            <h3>Academic Integrity / Institutional Policies</h3>
+            <p>Academic Integrity is the cornerstone of higher education and is central to the ideals of this course and the university. Cheating is strictly prohibited and
+                devalues the degree that you are working on. As a member of the NJIT community, it is your responsibility to protect your educational investment by knowing and
+                following the academic code of integrity policy that is found at: <a
+                    href="http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf">http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf"</a>.
+            </p>
+            <p>Please note that it is the professional obligation and responsibility of the instructor to report any academic misconduct to the Dean of Students Office. Any student
+                found in violation of the code by cheating, plagiarizing or using any online software inappropriately will result in disciplinary action. This may include a failing
+                grade of F, and/or suspension or dismissal from the university. If you have any questions about the code of Academic Integrity, please contact the Dean of Students
+                Office at dos@njit.edu.</p>
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>Good Luck!</h3>
+            <p> Instructor: Dr. Przemyslaw Musialski, Associate Professor<br /> Email: przemyslaw.musialski@njit.edu<br /> Copyright (c) 2019-2026 Przemyslaw Musialski </p>
+        </div>
+
+    </div>
+
+</body>
+</html>

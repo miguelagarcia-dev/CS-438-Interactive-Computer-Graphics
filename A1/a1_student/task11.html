@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="./resources/style.css">
+    <title>
+        A1 | Garcia, Miguel
+    </title>
+
+    <script type="text/javascript" src="./resources/math.js"></script>
+    <script type="text/javascript" src="./resources/color.js"></script>
+    <script type="text/javascript" src="task11.js"></script>
+</head>
+
+<body onload="main();">
+    <div class="content">
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h1>New Jersey Institute of Technology<br /> Interactive Computer Graphics CS 438 / CS 657</h1>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="display: initial;">
+            <h2>Assignment 1</h2>
+            <p>
+                Author: Garcia, Miguel
+            </p>
+            <h3>Date: <b style="color:tomato;">2/11/2026</b></h3>
+                <h3>Due: <b style="color:tomato;">2/25/2026</b></h3>
+            <p>Go to <a href="index.html">Assignment Home</a> | <a href="task11.html">Task 1</a> | <a href="task12.html">Task 2</a> | <a href="task13.html">Task 3</a> | <a href="task14.html">Task 4</a></p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="display: initial;">
+            <div class="taskdiv">
+                <h2>Task 1 (6 points)</h2>
+                <p>
+                    <b>Search for TODO_A1 in the JS file to find all tasks in the code!</b>
+                </p>
+                <p>Triangle subdivision and color interpolation:</p>
+                <p>
+                    1a: Create a 2d <a href="https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle">Sierpinski Gasket</a> geometry by calling this function recursively. Use the argument 'recursions' to specify the depth of the recursion.
+                    Use the function mix(a, b, lambda) for both the vertex and color interpolation with lambda = 0.5 (4 points). What happens if you use a different value for lambda (1 point)?
+                    Explain in the documentation below.
+                </p>
+                <p>
+                    1b: What does the slider 'Alpha' change? How? Explain in the documentation below (1 point).
+                </p>
+                <p>
+                    Your result should look like on the image below:
+                </p>
+                <img style="text-align:center" src="./img/task11.jpg" />
+            </div>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h2>Your WebGPU Canvas</h2>
+            <p id="webgpuStatus" class="statusline">WebGPU: initializing Task 1 preview...</p>
+            <div class="container">
+                <canvas id="webgpuCanvas" class="previewcanvas" width="800" height="600">
+                    Your browser does not support html5.
+                </canvas>
+                <div class="uiwrapper">
+                    <div class="uibox">Recursions: </div>
+                    <div class="uibox"> 0 <input id="rangeSlider" type="range" min="0" max="8" step="1" value="0" /> 8</div>
+                    <div class="uibox">Lambda: </div>
+                    <div class="uibox">0 <input id="lambdaSlider" type="range" min="0" max="1" step="0.05" value="0.5" /> 1</div>
+                    <div class="uibox">Alpha: </div>
+                    <div class="uibox"> 0 <input id="alphaSlider" type="range" min="0" max="1" step="0.1" value="1" /> 1</div>
+                </div>
+            </div>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h2>Documentation</h2>
+            <p>
+                Please write a short report here.
+                It should list what you have implemented, as well as a brief discussion and your conclusions.
+                Also add as many comments in your code as possible---it will help us in judging your work.
+            </p>
+
+            <h3>From my understanding </h3>
+            
+            <ul>
+                <li>
+                    vec2(x, y) — Creates a 2D point or a vector using the math resource which we 
+                    used to represent a vertex position on our webgpu canvas. Each corner of our triangles is a vec2.
+                </li>
+
+                <li>
+                    vec3(r, g, b) — According to the math resource is creating our color value (r, g, b).
+                    So each corner of the triangle also carries color.
+                </li>
+
+                <li>
+                    mix(u, v, lambda) — loops over the values of two same-length vectors u and v and computes 
+                    a weighted average using the formula from the math resource
+                    So we can use it to blend two positions or two colors. like (r1,g1,b1) and (r2,g2,b2) to get 
+                    a new color (r,g,b) that is a mix of the two. Or corner_ab is a mix of the two positions for example.
+                    Lambda is basically determing how far along we want our resulting point blended between the
+                    two inputs so 0.5 is the exact midpoint, less leans toward u, more leans toward v.  
+
+                </li>
+            </ul>
+
+
+            <h3>1a — What happens if you use a different value for lambda?</h3>
+            <p>
+                Lke mentioed before lambda = 0.5, is the mixed place or midpoint exactly halfway along two given inputs, so it
+                produces three equal sub-triangles at every level. When lambda is changed to any other value, the
+                midpoints are shifted toward one end of each edge. Which makes the sub-triangles unequal in size: one points 
+                to the left and the opposite side streches, and vice versa. At lambda = 0 or lambda = 1, all three midpoints collapse 
+                to a  corner of the triangle, so the sub-triangles get a zero area, and no
+                pattern is produced.
+                
+                So lambda basically controls the balance of the visual appearance by detmeining the weight of the two input vertices in the mix function.
+            </p>
+            <h3>1b — What does the Alpha slider change? How?</h3>
+            <p>
+                The Alpha slider seems to control the transparency of the entire our triangle. Its value (0 to 1) is written into
+                a uniform buffer on the GPU as u_params.x in the resoruc tab. So when we look at the fragment shader, every pixel's output
+                color is used as vec4f(color, alpha) — (r,g,b, and alpah) This is what we control in the slider. The WebGPU pipeline is 
+                configured alpha from my research as output.rgb = src.rgb × src.alpha  +  dst.rgb × (1 - src.alpha) so a value of 1.0
+                does noting, while going toward 0.0 makes the triangles more transparent by multiplying the color until become 
+                invisible against the white background.
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:#fff4d6;">
+            <h3>Assignment Validation &amp; Authorship</h3>
+            <p>
+                To ensure academic integrity and verify original authorship and mastery of the material, exams will include specific Validation Question.
+                Programming assignments are assessed on both code functionality and your understanding of the implementation. To verify authorship, exams
+                will include specific "Validation Questions" related to the logic and structure of your submitted assignments.
+            </p>
+            <p>
+                <b>Penalty Policy:</b> An incorrect answer to a validation question demonstrates a gap in understanding the submitted work. For each
+                validation question answered incorrectly, 10% of the total points for the corresponding assignment will be retroactively deducted from
+                that assignment's grade.
+            </p>
+            <p>
+                This deduction applies regardless of the original score received on the assignment. It is your responsibility to ensure you can explain
+                and reproduce the logic of any code you submit.
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:lightpink;">
+            <h3>Honor Code</h3>
+            <p>A set of ethical principles governing this course: </p>
+            <ul style="padding-left: 20px; margin: 0 0 8px 0;">
+                <li>It is <b>okay</b> to share information and knowledge with your colleagues, but</li>
+                <li>It is <b>not okay</b> to share the code,</li>
+                <li>It is <b>not okay</b> to post or give out your code to others (also in the future!),</li>
+                <li>It is <b>not okay</b> to use code from others (also from the past) for this assignment!</li>
+            </ul>
+            <p>Any noticed disregard of these principles will be sanctioned as per the Academic Integrity Policy of NJIT (see below).</p>
+            <h3>Academic Integrity / Institutional Policies</h3>
+            <p>Academic Integrity is the cornerstone of higher education and is central to the ideals of this course and the university. Cheating is strictly prohibited and
+                devalues the degree that you are working on. As a member of the NJIT community, it is your responsibility to protect your educational investment by knowing and
+                following the academic code of integrity policy that is found at: <a
+                    href="http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf">http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf"</a>.
+            </p>
+            <p>Please note that it is the professional obligation and responsibility of the instructor to report any academic misconduct to the Dean of Students Office. Any student
+                found in violation of the code by cheating, plagiarizing or using any online software inappropriately will result in disciplinary action. This may include a failing
+                grade of F, and/or suspension or dismissal from the university. If you have any questions about the code of Academic Integrity, please contact the Dean of Students
+                Office at dos@njit.edu.</p>
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>Good Luck!</h3>
+            <p> Instructor: Dr. Przemyslaw Musialski, Associate Professor<br /> Email: przemyslaw.musialski@njit.edu<br /> Copyright (c) 2019-2026 Przemyslaw Musialski </p>
+        </div>
+
+    </div>
+
+</body>
+</html>

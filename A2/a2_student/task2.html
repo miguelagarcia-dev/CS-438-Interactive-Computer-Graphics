@@ -1,0 +1,560 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+
+    </style>
+    <link rel="stylesheet" type="text/css" href="./resources/style.css">
+    <meta charset="utf-8" />
+    <title id="title">
+        A2 | Garcia, Miguel
+    </title>
+
+    <script type="text/javascript" src="./resources/color.js"></script>    
+    <script type="text/javascript" src="./resources/perlin.js"></script>
+    <script type="text/javascript" src="./resources/obj-loader.js"></script>
+    <script type="text/javascript" src="./resources/data.js"></script>
+    <script type="text/javascript" src="./resources/math.js"></script>
+    <script type="text/javascript" src="./resources/geometry.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-preview-common.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-task2.js"></script>
+    <script type="text/javascript" src="task2.js"></script>
+    <script type="text/javascript">
+        function visibility(id) {
+            var x = document.getElementById(id);
+            if (x.style.display === "none") {
+                x.style.display = "grid";
+            } else {
+                x.style.display = "none";
+            }
+        }      
+    </script>
+</head>
+
+<body onload="main();">
+    <div class="content">
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h1>New Jersey Institute of Technology<br /> Interactive Computer Graphics CS 438 / CS 657</h1>
+        </div>
+
+        <div class="textdiv" style="display: initial;">
+            <h2>Assignment 2</h2>
+            <p id="author">
+                Author: Garcia, Miguel
+            </p>
+            <h3>Date: <b style="color:tomato;">3/6/2026</b></h3>
+            <h3>Due: <b style="color:tomato;">3/27/2026</b></h3>
+            <p>Go to: <a href="index.html">Assignment Home</a> | <a href="task2.html">Tasks</a> </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <div class="taskdiv">
+                <h3>TASKS</h3>
+                <p>
+                    There are 3 Tasks. The html-js file pair is named accordingly:
+                    (task2.html, task2.js). Additionally, the WebGPU shader code is in
+                    <code>resources/webgpu-task2.wgsl</code>.
+                </p>
+                <p>
+                    <b>Search for TODO_A2 in task2.js and resources/webgpu-task2.wgsl</b> to find the location where to implement the
+                    tasks.
+                    You will also find the instructions for each task as comments in the code.
+                </p>
+
+                <h3>Hints:</h3>
+                <ul>
+                    <li>
+                        Note that all angle-values from the GUI-sliders are given in degrees. Low-level functions, like
+                        <code>Math.sin(x)</code>, however, take <b>radians</b> as input. Convert degrees to radians
+                        using
+                        <div class="codediv">
+                            let rad = radians(deg);
+                            <span style="font-family: Cambria, serif;">or</span>
+                            let rad = deg * Math.PI / 180.0;
+                        </div>
+                    </li>
+                    <li>
+                        You can create transformation matrices using the helper-functions in 'math.js'. Recall that to
+                        compute a transformation matrix the order matters! Also, note that the functions in 'math.js'
+                        take
+                        angles in <b>degrees</b> as input.
+                    </li>
+                    <li>
+                        In application code, you can multiply a 4x4 matrix with a 3d point/vector by extending the
+                        point/vector to a 4d point/vector using the <code>vec4</code> structure, e.g.,
+                        <div class="codediv">
+                            let a = vec3(); // defines a 3d structure<br> let b = vec4(a,1); // gives a 4d point with
+                            first 3 components taken from a.
+                        </div>
+                    </li>
+                    <li>
+                        You can get a 3d point/vector from a 4d structure using the <code>splice(0,3)</code> method,
+                        e.g.,
+                        <div class="codediv">
+                            let a = vec4(); // defines a 4d structure<br> let b = a.splice(0,3); // obtains first 3
+                            components of a and provides a 3d structure
+                        </div>
+                    </li>
+                    <li>
+                        Similarly, in WGSL shader code, you can compose vectors and access components, e.g.,
+                        <div class="codediv">
+                            let a = vec4&lt;f32&gt;(0.0, 0.0, 0.0, 1.0);<br> let b = a.xyz;
+                        </div>
+                    </li>
+                    <li>
+                        Start early! This assignment is more involved.
+                    </li>
+                </ul>
+                <h3>Notes:</h3>
+                <ul>
+                    <li>
+                        The documentation (below the WebGPU canvas) of your solution also contributes to the grading.
+                        If you do not document your work, points will be deducted.
+                    </li>
+                    <li>
+                        In tasks where your creativity is asked, you are not judged for your artistic skills. Only
+                        technical issues influence the grading.
+                    </li>
+                    <li>
+                        If you have questions regarding the assignment, post them on the <a
+                            href="https://njit.instructure.com/courses/10170/discussion_topics">CANVAS forum</a>
+                        where they will be answered.
+                        <b>Do not</b> write emails with individual questions!
+                    </li>
+                </ul>
+            </div>
+            <div class="taskdiv">
+                <h3>Task 1a: View-Transform (6 points)</h3>
+                <p>
+                    Implement the <b>view-transformation matrix</b> of the camera. Given the values of
+                    <code>rotx, roty, rotup, dist</code>, implement a simple control of the location of the camera by
+                    computing a transformation matrix for the <code>eye</code> location and the <code>up</code> vector.
+                    To create this transformation, you would need to multiply a number of transforms, and subsequently
+                    use it to transform the eye and up.
+                    E.g., (be careful, pseudo-code here):
+                    <div class="codediv">
+                        M = Rx * Ry * Rz * T; <br>
+                        eye = M * [0,0,0,1].splice(0,3); <br>
+                        up = M * [0,1,0,0].splice(0,3);
+                    </div>
+                </p>
+                <p>
+                    Hint: for better orientation during implementation, turn on the coordinate frame axes (checkbox
+                    'Coord. Frame') and turn off (checkbox in front of the objects) Object 1.
+                </p>
+                <p>
+                    Having the position of the eye and the up vector, you can use the
+                    <code>lookAt</code> function to determine the view-transform from eye, up, at!
+                </p>
+
+                <h3>Task 1b: Perspective Projection (2 points)</h3>
+                <p>
+                    Using the given values of <code>dist, fovy, near, far</code>, implement the <b>perspective
+                        projection</b> matrix and replace the standard projection matrix below.
+                </p>
+
+                <h3>Task 1c: Orthographic Projection (4 points)</h3>
+                <p>
+                    Using the given values, implement the <b>orthographic projection</b> matrix and replace the standard
+                    projection matrix below. Derive the values for <code>left, right, top, bottom</code> from
+                    <code>dist</code> and
+                    <code>fovy</code>. Use the current <code>near</code> and <code>far</code> slider values for the
+                    orthographic depth range as well.
+                </p>
+            </div>
+
+            <div class="taskdiv">
+                <h3>Task 2a: Transformation to View-Space (4 points)</h3>
+                <p>Hint: Task 2a is to be implemented in the file <code>resources/webgpu-task2.wgsl</code> using WGSL.</p>
+                <p>
+                    Transform the position of the vertex <code>a_position</code> to the view space using the model-view
+                    matrix. Store the transformed position in the vertex output field <code>out.pos</code>. Next, transform the
+                    normal-vectors <code>a_normal</code> to
+                    the view space using the transpose-inverse-model-view matrix denoted here as <code>u_normalmat</code>.
+                    Store the transformed normal in the output field <code>out.normal</code>.
+                </p>
+
+                <h3>Task 2b: Phong Reflection Model (6 points)</h3>
+                <p>Hint: Task 2b is to be implemented in the file <code>resources/webgpu-task2.wgsl</code> using WGSL.</p>
+                <p>
+                    Implement the Phong reflection model (Phong lighting). Compute the diffuse, specular, and ambient
+                    terms using the input arguments<br>
+                    <div class="codediv">
+                        vec3 V; // normalized vector towards the viewer's eye<br>
+                        vec3 N; // normalized normal vector of the surface point<br>
+                        vec3 L; // normalized vector towards the light source<br>
+                        float r; // distance to the light source<br>
+                    </div>
+                    and return the shaded color.
+                </p>
+
+            </div>
+
+            <div class="taskdiv">
+                <h3>Task 3: Material Design (3 points)</h3>
+
+                Create three new materials and add them to the material manager object. Experiment with the sliders in
+                the GUI and <b>be
+                    creative!</b> There is no right or wrong material setting for Phong Model, just try to make it look
+                as good as possible.
+                <ul>
+                    <li> Create a metal-like material, for instance "Polished Copper". </li>
+                    <li> Create a glossy material, e.g., "Pearl". </li>
+                    <li> Create a matte material, for instance "Pewter". </li>
+                </ul>
+            </div>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>Results</h3>
+            <p>
+                Your result should look similar to the image below:
+            </p>
+            <p>
+                <img style="text-align:center" src="./img/task2.jpg" />
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>WebGPU Canvas</h3>
+            <p id="webgpuStatus" class="statusline">WebGPU: waiting for initialization...</p>
+            <div class="container">
+                <canvas id="webgpuCanvas" width="800" height="600">
+                    Your browser does not support html5.
+                </canvas>
+
+                <!-- GUI elements  -->
+                <div class=uiwrapper>
+                    <div class="uiflex" id="flexleft">
+                        <div class="uiblock">
+                            <button onclick="visibility('uicamera');" class="uibox"
+                                style="color:white; font-weight: bold; background-color:transparent;">
+                                Camera Properties</button>
+                            <div class="uisection" id="uicamera">
+                                <div class="uibox" style="color:white;">Projection: </div>
+                                <div>
+                                    <select class="uibox" id="projectionSelect">
+                                        <option class="uibox" value="persp">Perspective</option>
+                                        <option class="uibox" value="ortho">Orthographic</option>
+                                    </select>
+                                </div>
+                                <div class="uibox" style="color:white;">Eye Rot X: </div>
+                                <div class="uibox" style="color:white;"> -90 <input id="rotXSlider" type="range"
+                                        min="-90" max="90" step="1" value="0" /> +90</div>
+                                <div class="uibox" style="color:white;">Eye Rot Y: </div>
+                                <div class="uibox" style="color:white;"> -90 <input id="rotYSlider" type="range"
+                                        min="-90" max="90" step="1" value="0" /> +90</div>
+                                <div class="uibox" style="color:white;">Up: </div>
+                                <div class="uibox" style="color:white;"> -90 <input id="rotZSlider" type="range"
+                                        min="-90" max="90" step="1" value="0" /> +90</div>
+                                <div class="uibox" style="color:white;">Dist: </div>
+                                <div class="uibox" style="color:white;"> 0 <input id="distSlider" type="range" min="0"
+                                        max="10" step="0.1" value="2" />&nbsp;10</div>
+                                <div class="uibox" style="color:white;">FovY: </div>
+                                <div class="uibox" style="color:white;"> 1 <input id="fovySlider" type="range" min="1"
+                                        max="120" step="1" value="90" />120</div>
+                                <div class="uibox" style="color:white;">Near: </div>
+                                <div class="uibox" style="color:white;"> 0.01 <input id="nearSlider" type="range"
+                                        min="0.01" max="4.99" step="0.01" value="0.1" />&nbsp;5</div>
+                                <div class="uibox" style="color:white;">Far: </div>
+                                <div class="uibox" style="color:white;">&nbsp;&nbsp; 5<input id="farSlider" type="range"
+                                        min="5" max="25" step="1" value="10" />25</div>
+                            </div>
+                        </div>
+
+                        <div class="uiblock">
+                            <button onclick="visibility('uigeometry');" class="uibox"
+                                style="color:white; font-weight: bold; background-color: transparent;">
+                                Geometry Properties</button>
+                            <div class="uisection" id="uigeometry">
+                                <div class="uibox" style="color:white;">Geometry:</div>
+                                <div>
+                                    <select class="uibox" id="geometrySelect">
+                                        <option class="uibox" value="sphere">Sphere</option>
+                                        <option class="uibox" value="cube">Cube</option>
+                                        <option class="uibox" value="teapot">Utah Teapot</option>
+                                        <option class="uibox" value="bunny">Stanford Bunny</option>
+                                    </select>
+                                </div>
+                                <div class="uibox" style="color:white;">Resolution: </div>
+                                <div class="uibox" style="color:white;"> 1 <input id="resSlider" type="range" min="1"
+                                        max="10" step="1" value="1" /> 10</div>
+                            </div>
+                        </div>
+
+                        <div class="uiblock">
+                            <button onclick="visibility('uiscene');" class="uibox"
+                                style="color:white; font-weight: bold; background-color:transparent;">
+                                Scene and Drawing Properties</button>
+                            <div class="uisection" id="uiscene">
+                                <div class="uibox" style="color:white;">Speed: </div>
+                                <div class="uibox" style="color:white;"> 0 <input id="speedSlider" type="range" min="0"
+                                        max="100" step="1" value="10" /> 100</div>
+
+                                <div class="uibox" style="color:white;">Object 1</div>
+                                <div class="uibox" style="color:white;">
+                                    <input type="checkbox" id="drawObj1" checked> Material: <select class="uibox"
+                                        id="obj1MatSelect"></select>
+                                </div>
+                                <div class="uibox" style="color:white;">Object 2</div>
+                                <div class="uibox" style="color:white;">
+                                    <input type="checkbox" id="drawObj2" checked> Material: <select class="uibox"
+                                        id="obj2MatSelect"></select>
+                                </div>
+                                <div class="uibox" style="color:white;">Object 3</div>
+                                <div class="uibox" style="color:white;">
+                                    <input type="checkbox" id="drawObj3" checked> Material: <select class="uibox"
+                                        id="obj3MatSelect"></select>
+                                </div>
+                                <div class="uibox" style="color:white;">Coord. Frame: </div>
+                                <div class="uibox" style="color:white;">
+                                    <input type="checkbox" id="drawFrame">
+                                </div>
+                                <div class="uibox" style="color:white;">Wireframe: </div>
+                                <div class="uibox" style="color:white;">
+                                    <input type="checkbox" id="drawWire">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="uiflex" id="flexright">
+                        <div class="uiblock">
+                            <button onclick="visibility('uishading');" class="uibox"
+                                style="color:white; font-weight: bold; background-color:transparent;">
+                                Shading Properties</button>
+                            <div class="uisection" id="uishading">
+                                <div class="uibox" style="color:white;">Shading: </div>
+                                <select class="uibox" id="shadingSelect">
+                                    <option class="uibox" value="0">Gouraud</option>
+                                    <option class="uibox" value="1">Phong</option>
+                                    <option class="uibox" value="2">Flat</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="uiblock">
+                            <button onclick="visibility('uilight');" class="uibox"
+                                style="color:white; font-weight: bold; background-color:transparent;">
+                                Light Properties</button>
+                            <div class="uisection" id="uilight">
+                                <div class="uibox" style="color:white;">Draw Bulb:</div>
+                                <div class="uibox" style="color:white;"><input type="checkbox" checked id="drawBulb">
+                                </div>
+                                <div class="uibox" style="color:white;">Light Color:</div>
+                                <div class="uibox" style="color:white;">
+                                    <input type="range" id="lightSlider" class="uibox" min="0" max="1" step="0.01"
+                                        value="1" style="width: 80%" />
+                                    <input type="color" id="lightColor" class="uibox" value="#ffffff"
+                                        style="width: 35px" /></div>
+                                <div class="uibox" style="color:white;">Light Rot X: </div>
+                                <div class="uibox" style="color:white;">
+                                    -90 <input id="lightRotXSlider" type="range" min="-90" max="90" step="1"
+                                        value="0" /> +90</div>
+                                <div class="uibox" style="color:white;">Light Rot Z: </div>
+                                <div class="uibox" style="color:white;"> -90 <input id="lightRotZSlider" type="range"
+                                        min="-90" max="90" step="1" value="0" /> +90</div>
+                                <div class="uibox" style="color:white;">Light Dist: </div>
+                                <div class="uibox" style="color:white;"> 0 <input id="lightDistSlider" type="range"
+                                        min="0" max="10" step="0.1" value="1" /> +10</div>
+                            </div>
+                        </div>
+
+                        <div class="uiblock">
+                            <button onclick="visibility('uimaterial');" class="uibox"
+                                style="color:white; font-weight: bold; background-color:transparent;">
+                                Material Properties</button>
+                            <div class="uisection" id="uimaterial">
+                                <div class="uibox" style="color:white;">Material: </div>
+                                <div>
+                                    <select class="uibox" id="materialSelect">
+                                        <!-- options come from the script -->
+                                    </select>
+                                </div>
+
+                                <div class="uibox" style="color:white;">Ambient (ka):</div>
+                                <div class="uibox" style="color:white;">
+
+                                    <div class="uibox" style="width: max-content;">
+                                        rgb: [&nbsp;
+                                        <div class="uibox" id="kaR" style="width: 25px;">0.10</div>,&nbsp;
+                                        <div class="uibox" id="kaG" style="width: 25px;">0.10</div>,&nbsp;
+                                        <div class="uibox" id="kaB" style="width: 25px;">0.10</div>
+                                        &nbsp;]
+                                    </div>
+                                    <input class="uibox" type="color" id="kaColor" value="#F6B73C"
+                                        style="width: 35px;" />
+                                </div>
+                                <div class="uibox" style="color:white;">Diffuse (kd):</div>
+                                <div class="uibox" style="color:white;">
+                                    <div class="uibox" style="width: max-content;">
+                                        rgb: [&nbsp;
+                                        <div class="uibox" id="kdR" style="width: 25px;">0.10</div>,&nbsp;
+                                        <div class="uibox" id="kdG" style="width: 25px;">0.10</div>,&nbsp;
+                                        <div class="uibox" id="kdB" style="width: 25px;">0.10</div>
+                                        &nbsp;]
+                                    </div>
+                                    <input class="uibox" type="color" id="kdColor" value="#F6B73C"
+                                        style="width: 35px;" />
+                                </div>
+                                <div class="uibox" style="color:white;">Specular (ks):</div>
+                                <div class="uibox" style="color:white;">
+                                    <div class="uibox" style="width: max-content;">
+                                        rgb: [&nbsp;
+                                        <div class="uibox" id="ksR" style="width: 25px;">0.10</div>,&nbsp;
+                                        <div class="uibox" id="ksG" style="width: 25px;">0.10</div>,&nbsp;
+                                        <div class="uibox" id="ksB" style="width: 25px;">0.10</div>
+                                        &nbsp;]
+                                    </div>
+                                    <input class="uibox" type="color" id="ksColor" value="#F6B73C"
+                                        style="width: 35px;" />
+                                </div>
+                                <div class="uibox" style="color:white;">Power (q):</div>
+                                <div class="uibox" style="color:white;">
+                                    <div class="uibox" id="qsValue" style="width: 25px;">0.1</div>
+                                    <input id="qsSlider" type="range" min="1" max="200" step="0.1" value="10"
+                                        style="width: 155px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p></p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>Documentation</h3>
+            <p>
+                <!-- *** TODO_A2: Write a brief report here! *** -->                                                                                  
+                <!-- *** Replace the text below! *** -->                                                                                            
+                <h3>TODO_A2: write a short report here.</h3>
+
+                <ul>
+                    <li>
+                        <b>Task 1a — View Transform:</b> 
+                        To control the camera I built a matrix chain that first
+                        rotates using the X, Y, and Z sliders, then translates the camera out along the Z axis by
+                        dist. From that combined matrix I extracted the eye position (by transforming the origin point)
+                        and the up direction (by transforming [0,1,0] as a direction vector with w=0).
+                        Then I passed those into lookAt with the origin as the target, so the camera
+                        always looks at the center of the scene.
+                    </li>
+                    <li>
+                        <b>Task 1b — Perspective Projection:</b> 
+                        Used the perspective() helper from math.js, passing in the fovy slider value, 
+                        the canvas aspect ratio, and the near/far clip values.
+                        So basically what this does is map the view frustum into clip space and the wider the 
+                        fovy, the more you can see, and things farther away appear smaller.
+                    </li>
+                    <li>
+                        <b>Task 1c — Orthographic Projection</b> 
+                        Derived the view volume bounds from dist and fovy
+                        using trig — half-height = dist * tan(fovy/2), then half-width from the aspect ratio.
+                        The key difference from perspective is that there's no depth foreshortening, so objects
+                        don't shrink as they get farther away.
+                    </li>
+                    <li>
+                        <b>Task 2a — View-Space Transform :</b> 
+                        In the vertex shader, I multiplied the vertex position
+                        by u_modelview to move it into view space. For normals, I used u_normalmat
+                        (the transpose-inverse of model-view) with w=0 since normals are directions. This keeps normals
+                        correct even when non-uniform scaling is applied.
+                    </li>
+                    <li>
+                        <b>Task 2b — Phong Lighting :</b> 
+                        Implemented the three Phong terms in the fragment shader.
+                        Ambient is just the base color that's always there. Diffuse uses dot(N, L) to scale the brightness
+                        based on the angle to the light. Specular reflects the light vector over the normal and checks
+                        how close that is to the view direction — the shininess exponent controls how tight the highlight is.
+                    </li>
+                    <li>
+                        <b>Task 3 — Materials:</b>
+                        Created three material, titanium as the metal, marble for the glossy, and sand as the matte.
+                        Each one was is tuned using the ka, kd, ks values from the old materials and the 
+                        shininess exponent to get the right look.
+                    </li>
+                </ul>
+
+                <h3>Material Colors</h3>
+                <ul>
+                    <li>
+                        <b>Titanium</b>  I tried going for cool dark grey with a blue tint. The High specular give it
+                        that hard metallic look, so the ks is high so the highlight is sharp and clean. 
+                    </li>
+                    <li>
+                        <b>Marble</b> It's warm cream white with a high diffuse to get that bright smooth surface and moderate
+                        specular so there's a soft glossy sheen to be duller than metal. 
+                    </li>
+                    <li>
+                        <b>Sand</b> — warm yellowish tan. Almost zero specular and a very low shininess exponent
+                        so basically no highlight at all. The idea is that sand scatters light in all directions
+                        and doesn't really reflect it, so it looks rough and gritty.
+                        I started with stone first but it just felt whatever, too plain and grey. But any color after 
+                        killing the specular in phoge looks matte. 
+                    </li>
+                </ul>
+            </p>
+            <p>
+                It should list what you have implemented, as well as a brief discussion and your conclusions. <br> Also
+                add as many comments in your code as possible---it will help us in judging your work.
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:#fff4d6;">
+            <h3>Assignment Validation &amp; Authorship</h3>
+            <p>
+                To ensure academic integrity and verify original authorship and mastery of the material, exams will include specific Validation Question.
+                Programming assignments are assessed on both code functionality and your understanding of the implementation. To verify authorship, exams
+                will include specific "Validation Questions" related to the logic and structure of your submitted assignments.
+            </p>
+            <p>
+                <b>Penalty Policy:</b> An incorrect answer to a validation question demonstrates a gap in understanding the submitted work. For each
+                validation question answered incorrectly, 10% of the total points for the corresponding assignment will be retroactively deducted from
+                that assignment's grade.
+            </p>
+            <p>
+                This deduction applies regardless of the original score received on the assignment. It is your responsibility to ensure you can explain
+                and reproduce the logic of any code you submit.
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:lightpink;">
+            <h3>Honor Code</h3>
+            <p>A set of ethical principles governing this course: </p>
+            <ul style="padding-left: 20px; margin: 0 0 8px 0;">
+                <li>It is <b>okay</b> to share information and knowledge with your colleagues, but</li>
+                <li>It is <b>not okay</b> to share the code,</li>
+                <li>It is <b>not okay</b> to post or give out your code to others (also in the future!),</li>
+                <li>It is <b>not okay</b> to use code from others (also from the past) for this assignment!</li>
+            </ul>
+            <p>Any noticed disregard of these principles will be sanctioned as per the Academic Integrity Policy of NJIT (see below).</p>
+            <h3>Academic Integrity / Institutional Policies</h3>
+            <p>Academic Integrity is the cornerstone of higher education and is central to the ideals of this course and the university. Cheating is strictly prohibited and
+                devalues the degree that you are working on. As a member of the NJIT community, it is your responsibility to protect your educational investment by knowing and
+                following the academic code of integrity policy that is found at: <a
+                    href="http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf">http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf</a>.
+            </p>
+            <p>Please note that it is the professional obligation and responsibility of the instructor to report any academic misconduct to the Dean of Students Office. Any student
+                found in violation of the code by cheating, plagiarizing or using any online software inappropriately will result in disciplinary action. This may include a failing
+                grade of F, and/or suspension or dismissal from the university. If you have any questions about the code of Academic Integrity, please contact the Dean of Students
+                Office at dos@njit.edu.</p>
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>Good Luck!</h3>
+            <p> Instructor: Dr. Przemyslaw Musialski, Associate Professor<br /> Email: przemyslaw.musialski@njit.edu<br /> Copyright (c) 2019-2026 Przemyslaw Musialski </p>
+        </div>
+    </div>
+</body>
+
+</html>

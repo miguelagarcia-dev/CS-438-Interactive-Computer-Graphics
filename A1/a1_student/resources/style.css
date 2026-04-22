@@ -1,0 +1,180 @@
+body {
+    background-color: white;
+    padding-top: 20px;
+    padding-bottom: 40px;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: auto;
+    grid-gap: 10px;
+    width: 830px;
+    margin: auto;
+    background-color: white;
+    border: 0px solid blue;
+}
+
+.container {
+    position: relative;
+    border: 0px solid red;
+}
+
+.uiwrapper {
+    position: absolute;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-gap: 4px;
+    justify-content: start;
+    align-content: start;
+    align-items: start;
+    top: 10px;
+    left: 10px;
+    width: auto;
+    border: 0px solid magenta;
+    z-index: 1;
+}
+
+.uiflex {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    border: 0px solid red;
+}
+
+.uiblock {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto;
+    grid-gap: 0px;
+    padding: 4px;
+    border: 0px solid green;
+}
+
+.uisection {
+    position: relative;
+    display: grid;
+    grid-template-columns: 30% 70%;
+    grid-gap: 0px;
+    padding: 0px;
+    border: 0px solid yellow;
+}
+
+.uibox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 16px;
+    padding: 0px;
+    margin: 0px;
+    color: darkslategray;
+    border: 0px solid white;
+    font: 10px Consolas;
+}
+
+.textdiv {
+    background-color: lavenderblush;
+    padding: 5px 15px 5px 15px;    
+}
+
+.statusline {
+    margin: 8px 0 0 0;
+    padding: 6px 8px;
+    border-left: 3px solid #7a7a7a;
+    background-color: #f3f3f3;
+    color: #333333;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.85em;
+}
+
+.statusline.ok {
+    border-left-color: #2e7d32;
+    background-color: #eef7ee;
+}
+
+.statusline.warn {
+    border-left-color: #a66a00;
+    background-color: #fff6e8;
+}
+
+.statusline.err {
+    border-left-color: #b00020;
+    background-color: #fdecef;
+}
+
+.previewcanvas {
+    display: block;
+    margin: 6px 0 4px 0;
+    border: 1px solid #b8b8b8;
+}
+
+/* Task 1.4 (migrated from A2): keep its larger control block pinned and bounded. */
+.task14-uiwrapper {
+    display: block;
+    top: 10px;
+    left: 10px;
+    width: 320px;
+    max-width: 320px;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.task14-uiwrapper .uisection {
+    grid-template-columns: 38% 62%;
+    row-gap: 3px;
+}
+
+.task14-uiwrapper .uibox {
+    min-height: 18px;
+}
+
+.task14-uiwrapper .uibox select {
+    width: 100%;
+}
+
+.taskdiv {
+    background-color: lavender;
+    padding: 5px 15px 5px 15px;
+    margin: 15px 0px 15px 0px;     
+}
+
+body {
+    font-family: Cambria, serif;    
+}
+
+h1 {
+    font-family: Cambria, serif;
+    font-size: 1.8em;
+}
+
+h2 {
+    font-family: Cambria, serif;
+    font-size: 1.4em;
+}
+
+h3 {
+    font-family: Cambria, serif;
+    font-size: 1.2em;
+}
+
+pre
+{
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;    
+}
+
+code {
+    font-family: 'Courier New', Courier, monospace;
+    /* font-family: Consolas, monospace; */
+    font-size: 0.9em;
+    color: darkblue;
+}
+
+li{
+    margin:0px 0 8px 0; 
+    padding: 0;
+    vertical-align:top;    
+}

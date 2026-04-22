@@ -1,0 +1,141 @@
+body {
+    background-color: white;
+    padding-top: 20px;
+    padding-bottom: 40px;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: auto;
+    grid-gap: 10px;
+    width: 830px;
+    margin: auto;
+    background-color: white;
+    border: 0px solid blue;
+}
+
+.container {
+    position: relative;
+    border: 0px solid red;
+}
+
+.uiwrapper {
+    position: absolute;
+    display: grid;
+    grid-template-columns: 280px 280px;
+    justify-content: space-between;
+    align-content: start;
+    align-items: start;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    border: 0px solid magenta;
+    /* z-index: 0; */
+}
+
+.uiflex {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    border: 0px solid red;
+}
+
+.uiblock {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto;
+    grid-gap: 0px;
+    padding: 4px;
+    border: 0px solid green;
+}
+
+.uisection {
+    position: relative;
+    display: grid;
+    grid-template-columns: 30% 70%;
+    grid-gap: 0px;
+    padding: 0px;
+    border: 0px solid yellow;
+}
+
+.uibox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 16px;
+    padding: 0px;
+    margin: 0px;
+    color: darkslategray;
+    border: 0px solid white;
+    font: 10px Consolas;
+}
+
+.uiitem {
+    font-family: Consolas;
+}
+
+#canvas {
+    border: 0px solid black;
+    /* opacity:0.5; */
+}
+
+.textdiv {
+    background-color: lavenderblush;
+    padding: 5px 15px 5px 15px;    
+}
+
+.taskdiv {
+    background-color: lavender;
+    padding: 5px 15px 5px 15px;
+    margin: 15px 0px 15px 0px;     
+}
+
+.codediv {
+    padding: 10px 20px 10px 20px;    
+    font-family: Consolas, monospace;
+    font-size: 0.8em;
+    color: darkblue;
+    /* background-color: lightblue; */
+    /* border: 0px solid yellow; */
+}
+
+body {
+    font-family: Cambria, serif;    
+}
+
+h1 {
+    font-family: Cambria, serif;
+    font-size: 1.8em;
+}
+
+h2 {
+    font-family: Cambria, serif;
+    font-size: 1.4em;
+}
+
+h3 {
+    font-family: Cambria, serif;
+    font-size: 1.2em;
+}
+
+pre
+{
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;    
+}
+
+code {
+    font-family: 'Courier New', Courier, monospace;
+    /* font-family: Consolas, monospace; */
+    font-size: 0.9em;
+    color: darkblue;
+}
+
+li{
+    margin:0px 0 8px 0; 
+    padding: 0;
+    vertical-align:top;    
+}

@@ -1,0 +1,258 @@
+﻿<html>
+
+<head>
+    <style>
+    </style>
+    <link rel="stylesheet" type="text/css" href="./resources/style.css">
+    <meta charset="utf-8" />
+    <title id="title"> A1 | Garcia, Miguel </title>
+    <script type="text/javascript" src="./resources/color.js"></script>
+    <script type="text/javascript" src="./resources/perlin.js"></script>
+    <script type="text/javascript" src="./resources/math.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-preview-common.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-task14.js"></script>
+    <script type="text/javascript" src="task14.js"></script>
+</head>
+
+<body onload="main();">
+    <div class="content">
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h1>New Jersey Institute of Technology<br /> Interactive Computer Graphics CS 438 / CS 657</h1>
+        </div>
+        <div class="textdiv" style="display: initial;">
+            <h2>Assignment 1</h2>
+            <p id="author">
+                Author: Garcia, Miguel
+            </p>
+            <h3>Date: <b style="color:tomato;">2/11/2026</b></h3>
+            <h3>Due: <b style="color:tomato;">2/25/2026</b></h3>
+            <p>Go to <a href="index.html">Assignment Home</a> | <a href="task11.html">Task 1</a> | <a href="task12.html">Task 2</a> | <a href="task13.html">Task 3</a> | <a href="task14.html">Task 4</a></p>
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <div class="taskdiv">
+                <h3>Task 4-1 (8 points)</h3>
+                <p> Implement procedural UV sphere geometry in <code>sphereGeometry(...)</code> and connect it properly to the rendering pipeline. </p>
+                <p> The implementation should
+                <ul>
+                    <li>generate vertex positions on a unit sphere using UV parameters</li>
+                    <li>generate per-vertex noise colors in the existing interleaved format <code>[x, y, z, c, c, c]</code></li>
+                    <li>generate triangle indices for the UV grid (two triangles per quad)</li>
+                    <li>return valid <code>{ vertices, indices }</code> data consumed by the GPU buffers</li>
+                </ul>
+                </p>
+                <p> Use these references for the mathematical model and parameterization:
+                    <a href="https://en.wikipedia.org/wiki/UV_mapping">UV mapping</a> and
+                    <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system</a>.
+                </p>
+                <p> If your Task 4-1 implementation is incomplete, you may continue with Tasks 4-2 to 4-4 using the fallback mesh loaded from
+                    <code>./resources/sphere_uv_fallback.obj</code>. </p>
+                <p> Describe the rationale of your implementation in the documentation section. </p>
+            </div>
+            <div class="taskdiv">
+                <h3>Task 4-2 (8 points)</h3>
+                <p> Implement a model matrix for the Earth model using a concatenation of canonical transformations. </p>
+                <p> The Earth should
+                <ul>
+                    <li> be scaled accordingly</li>
+                    <li> rotate around its axis</li>
+                    <li> be tilted by -23.44 degrees with respect to (wrt) its orbit axis</li>
+                    <li> orbit around the sun. </li>
+                </ul>
+                </p>
+                <p> Don't forget that the Earth's tilt angle is constant in the x-y-plane!<br> Be aware of the proper order of the transformations! </p>                    
+                <p> 
+                    Once the model matrix is done, combine it with the <code>viewMatrix</code> and set the <code>modelViewMatrix</code> to the uniform shader variable 
+                    <code>u_modelview</code> using its location handle <code>modelviewMatLocation</code>.  
+                    Additionally, set the <code>u_color</code> and <code>u_alpha</code> uniform variables accordingly to achieve your desired visual effect. 
+                </p>
+                <p>
+                    Describe the rationale of your implementation in the documentation section. 
+                </p>
+            </div>
+            <div class="taskdiv">
+                <h3>Task 4-3 (8 points)</h3>
+                <p> Implement a model matrix for the Moon model using a concatenation of canonical transformations. </p>
+                <p> The Moon should
+                <ul>
+                    <li> be scaled accordingly</li>
+                    <li> rotate around the Earth</li>
+                    <li> be tilted by -5.14 degrees with respect to (wrt) its orbit axis around the Earth in the x-y-plane </li>
+                    <li> orbit around the Earth</li>
+                    <li> orbit with the Earth around the Sun.</li>
+                </ul>                
+                <p> Be aware of the proper order of the transformations!</p>
+                <p> 
+                    Once the model matrix is done, combine it with the <code>viewMatrix</code> and set the <code>modelViewMatrix</code> to the uniform shader variable 
+                    <code>u_modelview</code> using its location handle <code>modelviewMatLocation</code>. 
+                    Additionally, set the <code>u_color</code> and <code>u_alpha</code> uniform variables accordingly to achieve your desired visual effect. 
+                </p>
+                <p>
+                    Describe the rationale of your implementation in the documentation section. 
+                </p>
+            </div>
+            <div class="taskdiv">
+                <h3>Task 4-4 (4 points)</h3>
+                <p> Use the <code>uniform vec3 u_color</code> to combine it with the provided attribute <code>vec3 a_color</code> in order to create shading for your celestial bodies. Be
+                    creative! There is no "right" way to create this color, so invent it in order to obtain a color for planets which satisfies you. </p>
+                <p> The attribute <code>vec3 a_color</code> contains noise values sampled from <a href="https://en.wikipedia.org/wiki/Perlin_noise">Perlin Noise</a> distribution.
+                    The noise is given in the range between <code>[0..1]</code> and is the same in all three channels of a_color. </p>
+                <p>
+                    Describe your shading effect in the documentation. 
+                </p>
+            </div>
+            <div class="taskdiv">
+                <p> Remark: if you are interested how the sphere is created and the noise is sampled, check out the function <code>sphereGeometry(...)</code>. </p>
+            </div>
+        </div>
+        <div class="textdiv">
+            <h3>Results</h3>
+            <p> Your result should look similar like on the image below: </p>
+            <img style="text-align:center" src="./img/task21.jpg" />
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>WebGPU Canvas</h3>
+            <p id="webgpuStatus" class="statusline">WebGPU: initializing Task 4 preview...</p>
+            <div class="container">
+                <canvas id="webgpuCanvas" class="previewcanvas" width="800" height="800">
+                    Your browser does not support html5.
+                </canvas>
+                <div class="uiwrapper task14-uiwrapper">
+                    <div class="uiflex" id="flexleft">
+                        <div class="uiblock">
+                            <div class="uisection" id="uicamera">
+                                <div class="uibox" style="color:white;">Speed: </div>
+                                <div class="uibox" style="color:white;"> 0 <input id="rangeSlider" type="range" min="0" max="100" step="1" value="10" /> 100</div>
+                                <div class="uibox" style="color:white;">Rot X: </div>
+                                <div class="uibox" style="color:white;"> 0 <input id="rotXSlider" type="range" min="0" max="90" step="1" value="0" /> 90</div>
+                                <div class="uibox" style="color:white;">Rot Y: </div>
+                                <div class="uibox" style="color:white;"> 0 <input id="rotYSlider" type="range" min="0" max="90" step="1" value="0" /> 90</div>
+                                <div class="uibox" style="color:white;">Rot Z: </div>
+                                <div class="uibox" style="color:white;"> 0 <input id="rotZSlider" type="range" min="0" max="90" step="1" value="0" /> 90</div>
+                                <div class="uibox" style="color:white;">Sun: </div>
+                                <div class="uibox" style="color:white;"><input type="checkbox" id="drawSun" checked \></div>
+                                <div class="uibox" style="color:white;">Earth: </div>
+                                <div class="uibox" style="color:white;"><input type="checkbox" id="drawEarth" checked \></div>
+                                <div class="uibox" style="color:white;">Moon: </div>
+                                <div class="uibox" style="color:white;"><input type="checkbox" id="drawMoon" checked \></div>
+                                <div class="uibox" style="color:white;">Wireframe: </div>
+                                <div class="uibox" style="color:white;"><input type="checkbox" id="drawWire" \> </div>
+                                <div class="uibox" style="color:white;">Depth Test: </div>
+                                <div class="uibox"><input id="depthCheck" type="checkbox" checked /> </div>
+                                <div class="uibox" style="color:white;">Face Culling: </div>
+                                <div class="uibox">
+                                    <select class="uibox" id="cullface">
+                                        <option class="uibox" value="none">None</option>    
+                                        <option class="uibox" value="front">Front</option>
+                                        <option class="uibox" value="back">Back</option>                                                                    
+                                        <option class="uibox" value="both">Front and Back</option>                                                                    
+                                    </select>
+                                </div>
+                                <div class="uibox" style="color:white;">Face Winding: </div>
+                                <div class="uibox">
+                                    <select class="uibox" id="frontface">                                          
+                                        <option class="uibox" value="ccw">CCW</option>
+                                        <option class="uibox" value="cw">CW</option>                                                                    
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>Documentation</h3>
+
+            <h4>Task 4-1 &ndash; UV Sphere Geometry</h4>
+            <p>
+                For this I used spherical coordinates to place vertices on a unit sphere.
+                Each vertex gets two angles: theta going top to bottom (0 at the north pole to PI at the south pole)
+                and phi sweeping all the way around (0 to 2*PI). Those convert to x, y, z using the standard
+                spherical to cartesian formulas with y as the up axis.
+                The grid is (heightSegments+1) by (widthSegments+1) so the seam and poles close up without any gaps.
+                Each quad gets split into two CCW triangles. The noise color comes from simplex3 sampled at the 3D position,
+                shifted from [-1, 1] to [0, 1], and pushed into all 3 color channels so it comes out grayscale.
+            </p>
+
+            <h4>Task 4-2 &ndash; Earth Model Matrix</h4>
+            <p>
+                The way I set this up, each mult call wraps the next transform on the outside,
+                so reading the calls from bottom to top gives you the actual order a point goes through:
+                scale first, then spin on its axis (dayDeg), then tilt -23.44 degrees around Z,
+                then translate out to orbit distance, then orbit the Sun (yearDeg).
+                The tilt goes between the axial spin and the translation so it stays constant in the x-y plane
+                and doesn't rotate along with the yearly orbit. Combined with viewMatrix at the end.
+            </p>
+
+            <h4>Task 4-3 &ndash; Moon Model Matrix</h4>
+            <p>
+                The Moon has to follow everything Earth does and then add its own orbit on top.
+                So the chain starts the same as Earth (orbit around Sun + jump to Earth's position),
+                then adds the Moon's own rotation around Earth (monthDeg), its distance offset from Earth,
+                its -5.14 degree tilt, and finally the scale. Since the Moon's local transforms are inside
+                Earth's orbit transform, it automatically tags along with Earth while still going around it.
+            </p>
+
+            <h4>Task 4-4 &ndash; Perlin Noise Shading</h4>
+            <p>
+                noiseColor comes in as grayscale so all 3 channels have the same value - I just use x as a scalar n.
+                I multiply the base material color by (0.4 + 0.6 * n) so the noise darkens some spots
+                without making anything fully black. It ends up looking kinda like rough terrain or cloud patches on the surface.
+                Alpha stays at u_material.w.
+            </p>
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:#fff4d6;">
+            <h3>Assignment Validation &amp; Authorship</h3>
+            <p>
+                To ensure academic integrity and verify original authorship and mastery of the material, exams will include specific Validation Question.
+                Programming assignments are assessed on both code functionality and your understanding of the implementation. To verify authorship, exams
+                will include specific "Validation Questions" related to the logic and structure of your submitted assignments.
+            </p>
+            <p>
+                <b>Penalty Policy:</b> An incorrect answer to a validation question demonstrates a gap in understanding the submitted work. For each
+                validation question answered incorrectly, 10% of the total points for the corresponding assignment will be retroactively deducted from
+                that assignment's grade.
+            </p>
+            <p>
+                This deduction applies regardless of the original score received on the assignment. It is your responsibility to ensure you can explain
+                and reproduce the logic of any code you submit.
+            </p>
+        </div>
+
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv" style="background-color:lightpink;">
+            <h3>Honor Code</h3>
+            <p>A set of ethical principles governing this course: </p>
+            <ul style="padding-left: 20px; margin: 0 0 8px 0;">
+                <li>It is <b>okay</b> to share information and knowledge with your colleagues, but</li>
+                <li>It is <b>not okay</b> to share the code,</li>
+                <li>It is <b>not okay</b> to post or give out your code to others (also in the future!),</li>
+                <li>It is <b>not okay</b> to use code from others (also from the past) for this assignment!</li>
+            </ul>
+            <p>Any noticed disregard of these principles will be sanctioned as per the Academic Integrity Policy of NJIT (see below).</p>
+            <h3>Academic Integrity / Institutional Policies</h3>
+            <p>Academic Integrity is the cornerstone of higher education and is central to the ideals of this course and the university. Cheating is strictly prohibited and
+                devalues the degree that you are working on. As a member of the NJIT community, it is your responsibility to protect your educational investment by knowing and
+                following the academic code of integrity policy that is found at: <a
+                    href="http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf">http://www5.njit.edu/policies/sites/policies/files/academic-integrity-code.pdf"</a>.
+            </p>
+            <p>Please note that it is the professional obligation and responsibility of the instructor to report any academic misconduct to the Dean of Students Office. Any student
+                found in violation of the code by cheating, plagiarizing or using any online software inappropriately will result in disciplinary action. This may include a failing
+                grade of F, and/or suspension or dismissal from the university. If you have any questions about the code of Academic Integrity, please contact the Dean of Students
+                Office at dos@njit.edu.</p>
+        </div>
+        <!--------------------------------------------------------------------------->
+        <div class="textdiv">
+            <h3>Good Luck!</h3>
+            <p> Instructor: Dr. Przemyslaw Musialski, Associate Professor<br /> Email: przemyslaw.musialski@njit.edu<br /> Copyright (c) 2019-2026 Przemyslaw Musialski </p>
+        </div>
+    </div>
+    </div>
+</body>
+
+</html>
