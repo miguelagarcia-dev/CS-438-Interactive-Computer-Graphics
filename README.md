@@ -45,6 +45,21 @@ Built on A2 by replacing flat colors with actual images (texture mapping) and th
 
 ---
 
+### A4 — Cornell-Box Ray Tracer (WebGPU Compute)
+`A4/`
+
+Moved from rasterization to ray tracing. The renderer runs entirely in a WebGPU compute shader — no raster pipeline, just a compute pass that writes radiance to an `rgba16float` storage texture, then a fullscreen blit that tone-maps and gamma-corrects onto the canvas. Scene is a PBRT-style Cornell box with five walls, a ceiling area light, a diffuse sphere, and a metal sphere.
+
+- **Task 2b** — Sphere intersection: solved the simplified quadratic `t² + 2bt + c = 0` (valid when `|rayDir| = 1`), picking the nearest root in front of the ray
+- **Task 3** — Lambert + Phong direct shading: same model as A2/A3, evaluated once per hit against a direct light sample from NEE
+- **Task 4** — Metal reflection: branched on a per-primitive metal flag — diffuse surfaces scatter via `normalize(N + randomInUnitSphere())`, metal surfaces reflect via WGSL's `reflect()` builtin
+
+The framework ships with next-event estimation (NEE) and multi-frame progressive accumulation. NEE sends a shadow ray to the area light at every non-emissive hit, dramatically cutting variance. Accumulation blends each frame into a running average so indirect noise integrates to clean. Toggling NEE off reveals how dark and noisy an enclosed Cornell box is when the only way to collect light is for a random bounce to accidentally hit the small ceiling emitter.
+
+![Cornell box render](A4/img/reference_render.png)
+
+---
+
 ## Stack
 
 - **WebGPU** — browser-native GPU API (no WebGL)

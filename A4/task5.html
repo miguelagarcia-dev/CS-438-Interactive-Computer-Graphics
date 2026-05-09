@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title id="title">
+        A5 | Lastname, Firstname, Student Number
+    </title>
+    <link rel="stylesheet" type="text/css" href="./resources/style.css">
+    <script type="text/javascript" src="./resources/utils.js"></script>
+    <script type="text/javascript" src="./resources/color.js"></script>
+    <script type="text/javascript" src="./resources/perlin.js"></script>
+    <script type="text/javascript" src="./resources/math.js"></script>
+    <script type="text/javascript" src="./resources/scene.js"></script>
+    <script type="text/javascript" src="task5.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-preview-common.js"></script>
+    <script type="text/javascript" src="./resources/webgpu-task5.js"></script>
+</head>
+
+<body onload="main();">
+    <div class="content">
+        <div class="textdiv">
+            <h1>New Jersey Institute of Technology<br /> Interactive Computer Graphics CS 438 / CS 657</h1>
+        </div>
+        <div class="textdiv" style="display: initial;">
+            <h2>Assignment 5</h2>
+            <p id="author">
+                Author: Last Name, First Name, Student Number
+            </p>
+            <h3>Date: <b style="color:tomato;">Spring 2026</b></h3>
+            <h3>Due: <b style="color:tomato;">See CANVAS Schedule</b></h3>
+        </div>
+
+        <div class="textdiv" style="display: initial;">
+            <div class="taskdiv">
+                <h2>Tasks</h2>
+                <p>
+                    Assignment 5 is a Cornell-box compute-shader ray tracer in WebGPU. The renderer
+                    runs entirely in a single compute pass that writes radiance to an
+                    <code>rgba16float</code> storage texture; a fullscreen blit pass then tone-maps
+                    and gamma-corrects the result onto the canvas. The graded path follows
+                    <i>Ray Tracing in One Weekend</i> (book 1): primary rays, sphere intersection,
+                    Lambertian diffuse, and metal reflection.
+                </p>
+                <p>
+                    Graded tasks live in <code>resources/webgpu-task5.wgsl</code>.
+                    <b>Search for <code>TODO_A5</code></b> to find each task's location; each block
+                    is preceded by a comment describing what to implement. Tasks 1 and 2a are
+                    provided as worked examples — read them as reference patterns. Optional bonus
+                    extensions live in the <code>BONUS_A5</code> section at the bottom of the same
+                    file (search for <code>BONUS_A5</code>).
+                </p>
+                <p>
+                    <b>Total: 25 points</b> — T2b (6) + T3 (10) + T4 (9). T1 and T2a are worked
+                    examples (0 points). Bonus tasks B1–B4 are ungraded.
+                </p>
+                <h3>Scene conventions:</h3>
+                <ul>
+                    <li>PBRT-style Cornell box. <code>+Y</code> up. Box bounds: <code>x &isin; [-1, +1]</code>,
+                        <code>y &isin; [0, 2]</code>, <code>z &isin; [-1, +1]</code>.</li>
+                    <li>Eight analytic primitives (5 walls, 1 ceiling area light, 2 spheres &mdash;
+                        one diffuse, one metal) defined in <code>resources/scene.js</code>.</li>
+                    <li>Camera looks at <code>(0, 1, 0)</code> from outside the open front face of the box;
+                        drag to orbit, right-drag or scroll wheel to dolly.</li>
+                </ul>
+                <h3>Notes:</h3>
+                <ul>
+                    <li>The documentation (below the canvas) of your solution also contributes to grading.</li>
+                    <li>Assignment questions go on the <a
+                            href="https://njit.instructure.com/courses/10170/discussion_topics">CANVAS forum</a>.</li>
+                    <li><b>Do not</b> write individual emails with assignment questions.</li>
+                </ul>
+                <h3>Reading:</h3>
+                <ul>
+                    <li><a href="https://raytracing.github.io/books/RayTracingInOneWeekend.html">Ray Tracing in One Weekend</a>
+                        (Peter Shirley) — camera (Ch 4), sphere intersection (Ch 5), antialiasing (Ch 7),
+                        diffuse materials (Ch 8), metal (Ch 9). Covers the math for the entire graded
+                        path (Tasks 1, 2b, 3, 4); code is C++ but maps directly to WGSL.</li>
+                    <li><a href="https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html">Ray Tracing: The Rest of Your Life</a>
+                        — Monte Carlo integration, area-light direct lighting, cosine-weighted
+                        hemisphere sampling, progressive accumulation, the BRDF·cos/pdf = albedo
+                        identity. Reference for bonus B2 (NEE), B3 (running-average accumulation),
+                        and B4 (cosine sampling).</li>
+                    <li><a href="https://tavianator.com/2011/ray_box.html">Fast, Branchless Ray/Bounding Box Intersections</a>
+                        (Tavian Barnes) — the slab method, three pages. Reference for bonus B1.</li>
+                </ul>
+            </div>
+
+            <div class="taskdiv">
+                <h2>1. Primary Ray Generation <span style="color:#888;">(worked example — 0 points)</span></h2>
+                <h3>Task 1: Pinhole Camera in <code>cs_main</code></h3>
+                <p>
+                    <b>Provided as a worked example.</b> Read the filled-in block in
+                    <code>resources/webgpu-task5.wgsl</code> (search for <code>TODO_A5 : Task 1</code>):
+                    it shows how to build a per-pixel pinhole ray from the camera basis. The image-space
+                    pixel center is converted to NDC, and the world-space ray direction is
+                    <code>normalize(forward + ndc.x * right - ndc.y * up)</code>, where
+                    <code>right</code> and <code>up</code> are pre-scaled by
+                    <code>tan(fov/2) * aspect</code> and <code>tan(fov/2)</code> on the JS side. The
+                    minus sign on <code>ndc.y * up</code> flips the image-space top-down y to NDC's
+                    bottom-up y. Understand it before you touch the later tasks.
+                </p>
+            </div>
+
+            <div class="taskdiv">
+                <h2>2. Sphere Intersection <span style="color:#888;">(6 points; 2a worked, 2b graded)</span></h2>
+                <h3>Task 2a: Plane intersection (worked example)</h3>
+                <p>
+                    <code>intersectPlane</code> is filled in for you in
+                    <code>resources/webgpu-task5.wgsl</code> (search for <code>TODO_A5 : Task 2a</code>).
+                    Read it carefully &mdash; it shows the shape every intersection routine follows:
+                    compute the per-shape <code>t</code>, reject if <code>t &lt; T_EPS</code> or the hit
+                    is out of the shape's bounds, fill the <code>Hit</code> struct (<code>t</code>,
+                    world-space <code>pos</code>, outward <code>normal</code>), and return
+                    <code>missHit()</code> on failure. Box intersection (slab method) is moved to
+                    bonus B1.
+                </p>
+                <h3>Task 2b: Sphere intersection (6 points)</h3>
+                <p>
+                    Implement <code>intersectSphere</code> in
+                    <code>resources/webgpu-task5.wgsl</code> (search for <code>TODO_A5 : Task 2b</code>),
+                    following the same shape as Task 2a. Solve
+                    <code>&Vert;rayOrigin + t&middot;rayDir &minus; center&Vert;&sup2; = r&sup2;</code>
+                    for <code>t</code>, pick the nearest root in front of the ray, and set the
+                    outward normal to <code>normalize(hitPos &minus; center)</code>. Reference:
+                    <i>Ray Tracing in One Weekend</i>, Ch 5.
+                </p>
+            </div>
+
+            <div class="taskdiv">
+                <h2>3. Lambert + Phong direct shading (10 points)</h2>
+                <h3>Task 3: <code>shadeLambertPhong(N, L, V, albedo, ks, shininess)</code></h3>
+                <p>
+                    The framework already does next-event estimation (NEE): at every non-emissive
+                    hit it picks a uniform random sample on the ceiling area light, casts a shadow
+                    ray, and computes the irradiance arriving at the surface. Your job is to write
+                    the <em>local shading evaluator</em> &mdash; the same Lambert + Phong model you
+                    wrote in the rasterization assignments &mdash; that turns that incoming light
+                    into outgoing radiance from this surface.
+                </p>
+                <p>
+                    Implement <code>shadeLambertPhong(N, L, V, albedo, ks, shininess)</code> in
+                    <code>resources/webgpu-task5.wgsl</code> (search for
+                    <code>TODO_A5 : Task 3</code>). Inputs: surface normal <code>N</code>,
+                    direction to light <code>L</code>, direction to viewer <code>V</code> (all
+                    unit), surface <code>albedo</code> (diffuse rgb), <code>ks</code> (specular
+                    strength), <code>shininess</code> (Phong exponent). Return:
+                </p>
+                <pre>diffuse  = albedo &middot; max(0, N&middot;L)
+R        = reflect(-L, N)
+specular = ks &middot; max(0, R&middot;V)<sup>shininess</sup>
+result   = diffuse + vec3(specular)</pre>
+                <p>
+                    The framework multiplies your result by the light's irradiance
+                    (<code>L<sub>e</sub> &middot; cos&theta;<sub>l</sub> &middot; A / d&sup2;</code>
+                    with visibility folded in) — you do not handle distance falloff, shadows, or
+                    area sampling here. References: the Phong shading prose from earlier in this
+                    course, plus the A4 specular shader you wrote.
+                </p>
+                <p>
+                    The bounce-loop wiring inside <code>cs_main</code> (where
+                    <code>shadeLambertPhong</code> is called and where material parameters are
+                    derived from the metal flag) is plain framework code — no banner, no edit
+                    needed there. Your only T3 work is the body of <code>shadeLambertPhong</code>.
+                </p>
+            </div>
+
+            <div class="taskdiv">
+                <h2>4. Metal reflection (9 points)</h2>
+                <h3>Task 4: Mirror reflection for the indirect bounce</h3>
+                <p>
+                    The Cornell scene contains two spheres: one diffuse, one metal (the metal flag
+                    is packed into <code>prim.extra.y</code> by <code>scene.js</code>). Inside the
+                    narrow <code>TODO_A5 : Task 4</code> banner inside <code>cs_main</code>'s
+                    bounce loop, branch on <code>isMetal</code>: when the flag is set, pick a
+                    perfect mirror reflection of the incoming ray about the surface normal — WGSL
+                    has a builtin for that (<code>reflect</code>). Otherwise, fall through to the
+                    book-1 random Lambertian scatter (what the stub already does). Throughput
+                    attenuation by albedo and the ray-origin offset stay outside your branch as
+                    framework wiring.
+                </p>
+                <p>
+                    Visible result: the metal sphere reflects the room around it (mirror
+                    reflection from T4) and shows a tight Phong specular highlight from the
+                    ceiling area light (direct lighting from T3). The two effects coexist
+                    naturally — they're the indirect and direct terms of the same surface.
+                </p>
+                <p>
+                    Reference: <i>Ray Tracing in One Weekend</i>, Ch 9 (metal). No Fresnel, no
+                    fuzz &mdash; book 1's first metal pass is a perfect mirror.
+                </p>
+            </div>
+
+            <div class="taskdiv">
+                <h2>Bonus / Self-Study (Ungraded)</h2>
+                <p>
+                    The bonus extensions are not graded but are encouraged self-study. Each lives
+                    in a banner-bracketed block in <code>resources/webgpu-task5.wgsl</code>; search
+                    for <code>BONUS_A5</code> to locate them.
+                </p>
+                <ul>
+                    <li><b>B1</b> &mdash; Box intersection (slab method).
+                        Reference: <a href="https://tavianator.com/2011/ray_box.html">Tavian Barnes,
+                        "Fast, Branchless Ray/Bounding Box Intersections"</a>.
+                        Adding a box back into the scene needs a two-file edit (bump
+                        <code>PRIM_COUNT</code> in both <code>scene.js</code> and the WGSL); the
+                        teaching comment inside the B1 block walks through it.</li>
+                    <li><b>B2</b> &mdash; Direct lighting via next-event estimation. <b>Already
+                        implemented in the framework</b> (study <code>sampleDirectLight</code>
+                        in the WGSL). The on-page <i>NEE</i> checkbox toggles it on/off — flip
+                        it off to see the noisy book-1 view that motivates NEE in the first
+                        place. No code to write; this is a reading task.
+                        Reference: <i>Ray Tracing in One Weekend, Book 3</i>
+                        (Light Sampling chapter).</li>
+                    <li><b>B3</b> &mdash; Multi-frame progressive accumulation.
+                        <b>Already implemented in the framework</b> (study the
+                        <code>u_frame.accumEnabled</code> branch at the end of <code>cs_main</code>
+                        in the WGSL). The on-page <i>Multi-frame accumulation</i> checkbox toggles
+                        it on/off; the <i>Reset accumulation</i> button restarts the running
+                        average. <b style="color:#a40;">Warning:</b> averaging hides bugs — a
+                        buggy <code>shadeLambertPhong</code> averages to consistent-looking-but-
+                        wrong output. <b>Toggle accumulation off while implementing or debugging
+                        T3</b>; the per-frame noise is your fast diagnostic. No code to write;
+                        this is a reading task. Reference: <i>Ray Tracing in One Weekend, Book 3</i>
+                        and PBRT's chapter on Monte Carlo image synthesis.</li>
+                    <li><b>B4</b> &mdash; Cosine-weighted hemisphere sampling (Malley's method).
+                        Drop-in replacement for <code>randomInUnitSphere</code> in the diffuse
+                        indirect bounce; cuts variance because the BRDF&middot;cos/pdf factor
+                        collapses to <code>albedo</code>, matching the throughput update.
+                        Implement the body of <code>cosineWeightedHemisphere</code> in the WGSL
+                        and swap your indirect-bounce call to use it.
+                        Reference: <i>Ray Tracing in One Weekend, Book 3</i>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="canvasdiv">
+            <canvas id="canvas" width="800" height="800"></canvas>
+            <div id="webgpuStatus"></div>
+        </div>
+
+        <div class="textdiv" style="display: initial;">
+            <div class="taskdiv">
+                <h2>Controls</h2>
+                <p>Drag the canvas to orbit. Right-drag or scroll wheel to dolly.</p>
+                <p>
+                    Vertical FOV: <span id="fovValue">50°</span>
+                    <input id="fovSlider" type="range" min="20" max="110" step="1" value="50" />
+                </p>
+                <p>
+                    Max bounces: <span id="bouncesValue">4</span>
+                    <input id="bouncesSlider" type="range" min="1" max="8" step="1" value="4" />
+                </p>
+                <p>
+                    <label>
+                        <input id="neeToggle" type="checkbox" checked />
+                        Next-event estimation (direct lighting)
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        <input id="accumToggle" type="checkbox" checked />
+                        Multi-frame accumulation
+                        <span style="color:#a40; font-size: 0.9em;">
+                            &mdash; averages noise across frames; <b>turn off while implementing
+                            T3</b> (it masks bugs by smoothing buggy output into consistent-looking
+                            wrong output).
+                        </span>
+                    </label>
+                </p>
+                <p>
+                    <button id="resetButton" type="button">Reset accumulation</button>
+                    <button id="saveRenderButton" type="button">Save reference render (PNG)</button>
+                </p>
+                <p>
+                    frame: <span id="frameDisplay">0</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="textdiv" style="display: initial;">
+            <div class="taskdiv">
+                <h2>Reference render</h2>
+                <p>
+                    Use the <i>Save reference render</i> button above to dump the current
+                    canvas to a PNG. With multi-frame accumulation on (default), let the
+                    image converge for ~5–10 seconds of stillness before saving so the
+                    indirect noise integrates out. Save your PNG next to this page as
+                    <code>img/reference_render.png</code>.
+                </p>
+                <img src="img/reference_render.png" alt="Reference render" style="width: 380px; border: 1px solid #ccc;" />
+            </div>
+            <div class="taskdiv">
+                <h2>Documentation</h2>
+                <h3>Implementation report</h3>
+                <h4>Task 2b: Sphere Intersection</h4>
+                <p>
+                    Since rayDir is a unit vector the quadratic simplifies to t² + 2bt + c = 0,
+                    dropping the a coefficient to 1 and giving t = -b ± sqrt(b²-c). The smaller
+                    root is tried first and the larger one is the fallback for when the ray starts
+                    inside the sphere. Both are rejected below T_EPS to avoid self-intersection,
+                    and the outward normal is normalize(hitPos - center).
+                </p>
+                <h4>Task 3: Lambert + Phong shading</h4>
+                <p>
+                    This is the same model from the rasterization assignments where diffuse is
+                    albedo * max(0, dot(N,L)), the reflection direction comes from reflect(-L, N),
+                    and specular is ks * pow(max(0, dot(R,V)), shininess). The function only
+                    handles local shading; the framework handles distance falloff and the area PDF.
+                </p>
+                <h4>Task 4: Metal reflection</h4>
+                <p>
+                    The bounce direction branches on isMetal. For metal it uses reflect(rayD, hit.normal)
+                    to get a perfect mirror direction, and for diffuse it keeps the original Lambertian
+                    scatter using normalize(hit.normal + randomInUnitSphere(rng)).
+                </p>
+                <h4>NEE on vs off</h4>
+                <p>
+                    With NEE on the scene is well lit and converges fast since a shadow ray is
+                    explicitly sent to the area light at every hit. When I turned it off the box
+                    went extremely dark and noisy because the only way to collect light is for a
+                    random bounce to accidentally hit the small ceiling light, which almost never happens.
+                </p>
+                <h4>Accumulation on vs off</h4>
+                <p>
+                    With accumulation off each frame stands alone so the indirect color bleed
+                    shows a lot of grain. With it on the running average smooths that out after
+                    a few seconds of stillness. As noted in the assignment, keeping it off while
+                    working on T3 was important since the average blends away bugs and makes
+                    wrong output look correct.
+                </p>
+                <h3>Bonus work (if attempted)</h3>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

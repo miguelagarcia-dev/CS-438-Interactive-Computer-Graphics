@@ -1,0 +1,3 @@
+# Placeholder so img/ is tracked even before a converged reference render is dropped here.
+# Use the "Save reference render" button in task5.html to dump the current canvas to PNG,
+# then move/rename it to img/reference_render.png and commit.
